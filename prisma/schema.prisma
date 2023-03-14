@@ -1,17 +1,784 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "mysql"
-    url      = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model TB_AMBIENTE {
+  id                         BigInt     @id @default(autoincrement())
+  id_cenario                 BigInt
+  id_tp_classificacao_padrao Int?       @db.TinyInt
+  nm_ambiente                String     @db.VarChar(50)
+  cd_usuario_criacao         String     @db.VarChar(50)
+  cd_usuario_modificacao     String     @db.VarChar(50)
+  dt_criacao                 DateTime   @db.DateTime(0)
+  dt_modificacao             DateTime   @db.DateTime(0)
+  st_ativo                   Boolean    @default(dbgenerated("b'1'")) @db.Bit(1)
+  TB_CENARIO                 TB_CENARIO @relation(fields: [id_cenario], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CENA_AMBIENTE_CENARIO")
+  TB_CENA                    TB_CENA[]
+
+  @@index([id_cenario], map: "TB_CENA_AMBIENTE_CENARIO_IDX")
+}
+
+model TB_AMBIENTE_SINONIMO {
+  id                     BigInt   @id @default(autoincrement())
+  id_ambiente            BigInt
+  nm_ambiente            String   @db.VarChar(50)
+  cd_usuario_criacao     String   @db.VarChar(50)
+  cd_usuario_modificacao String   @db.VarChar(50)
+  dt_criacao             DateTime @db.DateTime(0)
+  dt_modificacao         DateTime @db.DateTime(0)
+}
+
+model TB_ATOR {
+  id                        BigInt                      @id
+  nm_ator                   String                      @db.VarChar(50)
+  st_ativo                  Boolean                     @default(dbgenerated("b'1'")) @db.Bit(1)
+  cd_usuario_criacao        String                      @db.VarChar(50)
+  cd_usuario_modificacao    String                      @db.VarChar(50)
+  dt_criacao                DateTime                    @db.DateTime(0)
+  dt_modificacao            DateTime                    @db.DateTime(0)
+  tp_genero                 Int?                        @db.TinyInt
+  disponivel                Boolean?
+  TB_INDISPONIBILIDADE_ATOR TB_INDISPONIBILIDADE_ATOR[]
+  TB_PERSONAGEM             TB_PERSONAGEM[]
+}
+
+model TB_CAPITULO {
+  id                     BigInt              @id @default(autoincrement())
+  id_programa            BigInt
+  id_numero              Int
+  id_bloco               BigInt?
+  id_st_capitulo         Int?                @db.TinyInt
+  id_versao              String?             @db.Char(32)
+  nm_versao              String?             @db.Char(5)
+  nm_arquivo             String?             @db.VarChar(50)
+  nm_episodio            String?             @db.VarChar(50)
+  st_secreto             Boolean?            @db.Bit(1)
+  st_ativo               Boolean             @default(dbgenerated("b'1'")) @db.Bit(1)
+  dt_exibicao            DateTime?           @db.DateTime(0)
+  dt_gravacao            DateTime?           @db.DateTime(0)
+  dt_arquivo             DateTime            @db.DateTime(0)
+  dt_criacao             DateTime            @db.DateTime(0)
+  dt_modificacao         DateTime            @db.DateTime(0)
+  cd_usuario_criacao     String              @db.VarChar(50)
+  cd_usuario_modificacao String              @db.VarChar(50)
+  id_tamanho_original    Decimal?            @db.Decimal(10, 2)
+  TB_CAPITULO_BLOCO      TB_CAPITULO_BLOCO?  @relation(fields: [id_bloco], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CAPITULO_BLOCO")
+  TB_STATUS_CAPITULO     TB_STATUS_CAPITULO? @relation(fields: [id_st_capitulo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CAPITULO_STATUS_CAPITULO")
+  TB_CENA                TB_CENA[]
+
+  @@index([id_bloco], map: "TB_CAPITULO_BLOCO")
+  @@index([id_st_capitulo], map: "TB_CAPITULO_STATUS_CAPITULO")
+  @@index([id_numero], map: "TB_CAPITULO_id_numero_IDX")
+  @@index([id_programa], map: "TB_CAPITULO_id_programa_IDX")
+}
+
+model TB_CAPITULO_BLOCO {
+  id                     BigInt        @id @default(autoincrement())
+  id_programa            BigInt
+  id_tamanho             Int           @db.TinyInt
+  id_numero              Int
+  nm_bloco               String        @db.VarChar(50)
+  cd_usuario_criacao     String        @db.VarChar(50)
+  cd_usuario_modificacao String        @db.VarChar(50)
+  dt_criacao             DateTime      @db.DateTime(0)
+  dt_modificacao         DateTime      @db.DateTime(0)
+  TB_CAPITULO            TB_CAPITULO[]
+
+  @@unique([id_numero, id_programa], map: "UNIQUE_NUMERO_PROGRAMA")
+  @@index([id_programa], map: "TB_CAPITULO_BLOCO_id_programa_IDX")
+}
+
+model TB_CATEGORIA_CENA {
+  id           Int       @id @db.TinyInt
+  nm_categoria String    @db.VarChar(50)
+  TB_CENA      TB_CENA[]
+}
+
+model TB_CATEGORIA_OCORRENCIA {
+  id            BigInt          @id @unique(map: "ID_UNIQUE")
+  id_pai        BigInt?
+  nm_categoria  String          @db.VarChar(50)
+  st_ativo      Boolean         @default(dbgenerated("b'1'")) @db.Bit(1)
+  st_elenco     Boolean         @default(dbgenerated("b'0'")) @db.Bit(1)
+  TB_OCORRENCIA TB_OCORRENCIA[]
+
+  @@index([id_pai], map: "CATEGORIA_PAI_IDX")
+}
+
+model TB_CENA {
+  id                                                               BigInt                     @id @default(autoincrement())
+  id_numero                                                        Int?                       @db.TinyInt
+  id_pagina                                                        Int                        @default(0) @db.TinyInt
+  id_cenario                                                       BigInt?
+  id_tamanho                                                       Decimal                    @default(0.000) @db.Decimal(10, 3)
+  id_ambiente                                                      BigInt?
+  id_tp_periodo_cenico                                             Int?                       @db.TinyInt
+  id_tp_hora_cenica                                                Int?                       @db.TinyInt
+  id_tp_espaco_cena                                                Int?                       @db.TinyInt
+  id_tp_categoria_cena                                             Int?                       @db.TinyInt
+  id_tp_classificacao_cena                                         Int?                       @db.TinyInt
+  id_st_cena                                                       Int                        @default(1) @db.TinyInt
+  id_tp_acesso                                                     Int?                       @db.TinyInt
+  id_numero_dias_antes_gravacao                                    Int?                       @db.TinyInt
+  cd_letra                                                         String?                    @db.Char(2)
+  st_secreta                                                       Boolean                    @default(dbgenerated("b'0'")) @db.Bit(1)
+  st_gravar                                                        Boolean                    @default(dbgenerated("b'1'")) @db.Bit(1)
+  st_sem_ambiente                                                  Boolean                    @default(dbgenerated("b'0'")) @db.Bit(1)
+  st_ativo                                                         Boolean                    @default(dbgenerated("b'1'")) @db.Bit(1)
+  ds_cenario_temporario                                            String?                    @db.VarChar(100)
+  ds_ambiente_temporario                                           String?                    @db.VarChar(100)
+  ds_resumo                                                        String?                    @db.VarChar(10000)
+  cd_usuario_criacao                                               String                     @db.VarChar(50)
+  cd_usuario_modificacao                                           String                     @db.VarChar(50)
+  dt_expiracao_sigilo                                              DateTime?                  @db.DateTime(0)
+  dt_criacao                                                       DateTime                   @db.DateTime(0)
+  dt_modificacao                                                   DateTime                   @db.DateTime(0)
+  id_capitulo                                                      BigInt
+  ds_observacao                                                    String?                    @db.VarChar(280)
+  TB_CATEGORIA_CENA                                                TB_CATEGORIA_CENA?         @relation(fields: [id_tp_categoria_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cena_categoria_cena")
+  TB_TIPO_CENA                                                     TB_TIPO_CENA?              @relation(fields: [id_tp_classificacao_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cena_classificacao_cena")
+  TB_TIPO_ESPACO_CENA                                              TB_TIPO_ESPACO_CENA?       @relation(fields: [id_tp_espaco_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cena_espaco_cena")
+  TB_TIPO_PERIODO_CENICO                                           TB_TIPO_PERIODO_CENICO?    @relation(fields: [id_tp_periodo_cenico], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cena_periodo_cenico")
+  TB_AMBIENTE                                                      TB_AMBIENTE?               @relation(fields: [id_ambiente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tb_cena_ambiente")
+  TB_CENARIO                                                       TB_CENARIO?                @relation(fields: [id_cenario], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tb_cena_cenario")
+  TB_CAPITULO                                                      TB_CAPITULO                @relation(fields: [id_capitulo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tb_cena_tb_capitulo")
+  TB_CENA_FIGURANTE                                                TB_CENA_FIGURANTE[]
+  TB_CENA_PERSONAGEM                                               TB_CENA_PERSONAGEM[]
+  TB_CENA_SEQUENCIA_TB_CENA_SEQUENCIA_id_cenaToTB_CENA             TB_CENA_SEQUENCIA[]        @relation("TB_CENA_SEQUENCIA_id_cenaToTB_CENA")
+  TB_CENA_SEQUENCIA_TB_CENA_SEQUENCIA_id_cena_relacionadaToTB_CENA TB_CENA_SEQUENCIA[]        @relation("TB_CENA_SEQUENCIA_id_cena_relacionadaToTB_CENA")
+  TB_CENA_STATUS_HISTORICO                                         TB_CENA_STATUS_HISTORICO[]
+  TB_CENA_TAG                                                      TB_CENA_TAG[]
+  TB_CENA_TEXTO                                                    TB_CENA_TEXTO[]
+  TB_DUBLE_PERSONAGEM_CENA                                         TB_DUBLE_PERSONAGEM_CENA[]
+  TB_ROTEIRO_CENA                                                  TB_ROTEIRO_CENA[]
+
+  @@index([cd_letra], map: "LETRA_IX")
+  @@index([id_capitulo], map: "TB_CENA_TB_CAPITULO_id_fk")
+  @@index([id_numero], map: "TB_CENA_id_numero_IDX")
+  @@index([st_ativo], map: "TB_CENA_st_ativo_IDX")
+  @@index([id_ambiente], map: "ambiente_ix")
+  @@index([id_cenario], map: "cenario_ix")
+  @@index([id_tp_categoria_cena], map: "fk_cena_categoria_cena_idx")
+  @@index([id_tp_classificacao_cena], map: "fk_cena_classificacao_cena_idx")
+  @@index([id_tp_espaco_cena], map: "fk_cena_espaco_cena_idx")
+  @@index([id_tp_periodo_cenico], map: "fk_cena_periodo_cenico_idx")
+}
+
+model TB_CENARIO {
+  id                     BigInt                @id @default(autoincrement())
+  id_programa            BigInt
+  nm_cenario             String                @db.VarChar(50)
+  cd_usuario_criacao     String                @db.VarChar(50)
+  cd_usuario_modificacao String                @db.VarChar(50)
+  dt_criacao             DateTime              @db.DateTime(0)
+  dt_modificacao         DateTime              @db.DateTime(0)
+  st_ativo               Boolean               @default(dbgenerated("b'1'")) @db.Bit(1)
+  TB_AMBIENTE            TB_AMBIENTE[]
+  TB_CENA                TB_CENA[]
+  TB_CENARIO_SINONIMO    TB_CENARIO_SINONIMO[]
+
+  @@index([st_ativo, id_programa], map: "PROGRAMA_ATIVO_IX")
+}
+
+model TB_CENARIO_SINONIMO {
+  id                     BigInt     @id @default(autoincrement())
+  id_cenario             BigInt
+  nm_cenario             String     @db.VarChar(50)
+  cd_usuario_criacao     String     @db.VarChar(50)
+  cd_usuario_modificacao String     @db.VarChar(50)
+  dt_criacao             DateTime   @db.DateTime(0)
+  dt_modificacao         DateTime   @db.DateTime(0)
+  TB_CENARIO             TB_CENARIO @relation(fields: [id_cenario], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "CENARIO_FK")
+
+  @@index([id_cenario], map: "CENARIO_FK_IX")
+}
+
+model TB_CENA_EXECUCAO {
+  id                     BigInt           @id @default(autoincrement())
+  id_cena                BigInt
+  id_roteiro             Int
+  id_tp_execucao         Int              @db.TinyInt
+  dt_execucao            DateTime         @db.DateTime(0)
+  st_hora_manual         Boolean          @default(dbgenerated("b'0'")) @db.Bit(1)
+  st_ativo               Boolean          @default(dbgenerated("b'1'")) @db.Bit(1)
+  cd_usuario_criacao     String           @db.VarChar(50)
+  cd_usuario_modificacao String           @db.VarChar(50)
+  dt_criacao             DateTime         @db.DateTime(0)
+  dt_modificacao         DateTime         @db.DateTime(0)
+  TB_TIPO_EXECUCAO       TB_TIPO_EXECUCAO @relation(fields: [id_tp_execucao], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "CENA_EXECUCAO_TIPO_EXECUCAO")
+
+  @@index([id_tp_execucao], map: "CENA_EXECUCAO_TIPO_EXECUCAO_IDX")
+  @@index([id_cena, st_ativo], map: "TB_CENA_EXECUCAO_id_cena_IDX")
+}
+
+model TB_CENA_FIGURANTE {
+  id                     BigInt       @id @default(autoincrement())
+  id_cena                BigInt
+  id_figurante           BigInt
+  cd_usuario_criacao     String       @db.VarChar(50)
+  cd_usuario_modificacao String       @db.VarChar(50)
+  dt_criacao             DateTime     @db.DateTime(0)
+  dt_modificacao         DateTime     @db.DateTime(0)
+  TB_CENA                TB_CENA      @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "id_cena_FK")
+  TB_FIGURANTE           TB_FIGURANTE @relation(fields: [id_figurante], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "id_figurante_FK")
+
+  @@index([id_cena], map: "id_cena_FK_idx")
+  @@index([id_figurante], map: "id_figurante_FK")
+}
+
+model TB_CENA_ORDEM {
+  id                     BigInt   @id @default(autoincrement())
+  id_cena                BigInt
+  id_ordem               Int
+  id_roteiro             Int
+  st_ativo               Boolean  @db.Bit(1)
+  cd_usuario_criacao     String   @db.VarChar(50)
+  cd_usuario_modificacao String   @db.VarChar(50)
+  dt_criacao             DateTime @db.DateTime(0)
+  dt_modificacao         DateTime @db.DateTime(0)
+
+  @@index([id_cena, st_ativo], map: "TB_CENA_ORDEM_id_cena_IDX")
+}
+
+model TB_CENA_PERSONAGEM {
+  id                       BigInt         @id @default(autoincrement())
+  id_personagem            BigInt?
+  id_cena                  BigInt
+  nm_temporario_personagem String?        @db.VarChar(50)
+  cd_usuario_criacao       String         @db.VarChar(50)
+  cd_usuario_modificacao   String         @db.VarChar(50)
+  dt_criacao               DateTime       @db.DateTime(0)
+  dt_modificacao           DateTime       @db.DateTime(0)
+  TB_PERSONAGEM            TB_PERSONAGEM? @relation(fields: [id_personagem], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CENA_PERSONAGEM_PERSONAGEM")
+  TB_CENA                  TB_CENA        @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CENA_PERSONAGEM_TEMPORARIO_CENA")
+
+  @@unique([id_personagem, id_cena, nm_temporario_personagem], map: "UNIQUE_PERSONAGEM_CENA_NOME")
+  @@index([id_personagem], map: "TB_CENA_PERSONAGEM_PERSONAGEM_idx")
+  @@index([id_cena], map: "TB_CENA_PERSONAGEM_TEMPORARIO_CENA")
+  @@index([nm_temporario_personagem], map: "TB_CENA_PERSONAGEM_nm_temporario_personagem_index")
+}
+
+model TB_CENA_SEQUENCIA {
+  id_cena                                                BigInt
+  id_cena_relacionada                                    BigInt
+  id_ordem                                               Int      @db.TinyInt
+  cd_usuario_criacao                                     String   @db.VarChar(50)
+  cd_usuario_modificacao                                 String   @db.VarChar(50)
+  dt_criacao                                             DateTime @db.DateTime(0)
+  dt_modificacao                                         DateTime @db.DateTime(0)
+  TB_CENA_TB_CENA_SEQUENCIA_id_cenaToTB_CENA             TB_CENA  @relation("TB_CENA_SEQUENCIA_id_cenaToTB_CENA", fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_DISPOSITIVO_TB_CENA")
+  TB_CENA_TB_CENA_SEQUENCIA_id_cena_relacionadaToTB_CENA TB_CENA  @relation("TB_CENA_SEQUENCIA_id_cena_relacionadaToTB_CENA", fields: [id_cena_relacionada], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_DISPOSITIVO_TB_CENA_RELACIONADA")
+
+  @@id([id_cena, id_cena_relacionada, id_ordem])
+  @@index([id_cena_relacionada], map: "TB_DISPOSITIVO_TB_CENA_RELACIONADA")
+}
+
+model TB_CENA_STATUS_HISTORICO {
+  id                     BigInt   @id @default(autoincrement())
+  id_cena                BigInt
+  id_st_cena             Int      @db.TinyInt
+  dt_modificacao         DateTime @db.DateTime(0)
+  dt_criacao             DateTime @default(now()) @db.DateTime(0)
+  cd_usuario_criacao     String   @db.VarChar(50)
+  cd_usuario_modificacao String   @db.VarChar(50)
+  TB_CENA                TB_CENA  @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_status_cena_historico_cena")
+
+  @@index([id_cena], map: "fk_status_cena_historico_cena_idx")
+}
+
+model TB_CENA_TAG {
+  id_cena                BigInt
+  id_tag                 BigInt
+  cd_usuario_criacao     String   @db.VarChar(50)
+  cd_usuario_modificacao String   @db.VarChar(50)
+  dt_criacao             DateTime @db.DateTime(0)
+  dt_modificacao         DateTime @db.DateTime(0)
+  TB_CENA                TB_CENA  @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CENA_TAGS_TB_CENA")
+  TB_TAG                 TB_TAG   @relation(fields: [id_tag], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CENA_TAGS_TB_TAG")
+
+  @@id([id_cena, id_tag])
+  @@index([id_tag], map: "TB_CENA_TAGS_TB_TAG")
+}
+
+model TB_CENA_TEXTO {
+  id                       BigInt           @id @default(autoincrement())
+  id_cena                  BigInt
+  id_personagem            BigInt?
+  id_numero                Int
+  id_tp_texto              Int              @db.TinyInt
+  id_tp_dialogo            Int?             @db.TinyInt
+  nm_temporario_personagem String?          @db.VarChar(50)
+  ds_texto                 String           @db.VarChar(10000)
+  st_ativo                 Boolean          @default(dbgenerated("b'1'")) @db.Bit(1)
+  cd_usuario_criacao       String           @db.VarChar(50)
+  cd_usuario_modificacao   String           @db.VarChar(50)
+  dt_criacao               DateTime         @db.DateTime(0)
+  dt_modificacao           DateTime         @db.DateTime(0)
+  TB_CENA                  TB_CENA          @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CENA_TEXTO_CENA")
+  TB_PERSONAGEM            TB_PERSONAGEM?   @relation(fields: [id_personagem], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CENA_TEXTO_PERSONAGEM")
+  TB_TIPO_DIALOGO          TB_TIPO_DIALOGO? @relation(fields: [id_tp_dialogo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CENA_TEXTO_TIPO_DIALOGO")
+  TB_TIPO_TEXTO            TB_TIPO_TEXTO    @relation(fields: [id_tp_texto], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CENA_TEXTO_TIPO_TEXTO")
+
+  @@index([st_ativo], map: "ATIVO_IX")
+  @@index([id_cena], map: "TB_CENA_TEXTO_CENA")
+  @@index([id_personagem], map: "TB_CENA_TEXTO_PERSONAGEM_idx")
+  @@index([id_tp_dialogo], map: "TB_CENA_TEXTO_TIPO_DIALOGO")
+  @@index([id_tp_texto], map: "TB_CENA_TEXTO_TIPO_TEXTO")
+}
+
+model TB_CLAQUETE {
+  id                     BigInt             @id @default(autoincrement())
+  ds_claquete            String?            @db.VarChar(100)
+  nm_diretor_frente      String             @db.VarChar(50)
+  nm_diretor_fotografia  String?            @db.VarChar(50)
+  st_invertida           Boolean?           @default(dbgenerated("b'0'")) @db.Bit(1)
+  qt_frames              Int?               @default(60)
+  cd_usuario_criacao     String             @db.VarChar(50)
+  cd_usuario_modificacao String             @db.VarChar(50)
+  dt_criacao             DateTime           @db.DateTime(0)
+  dt_modificacao         DateTime           @db.DateTime(0)
+  TB_CLAQUETE_CENA       TB_CLAQUETE_CENA[]
+}
+
+model TB_CLAQUETE_CENA {
+  id_claquete            BigInt
+  id_cena                BigInt
+  cd_usuario_criacao     String      @db.VarChar(50)
+  cd_usuario_modificacao String      @db.VarChar(50)
+  dt_criacao             DateTime    @db.DateTime(0)
+  dt_modificacao         DateTime    @db.DateTime(0)
+  TB_CLAQUETE            TB_CLAQUETE @relation(fields: [id_claquete], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CLAQUETE_CENA_CLQUETE")
+
+  @@id([id_claquete, id_cena])
+  @@index([id_cena], map: "CLAQUETE_CENA_FK_idx")
+}
+
+model TB_CONEXAO {
+  id                String              @id @db.VarChar(50)
+  tp_notificacao    Int                 @db.TinyInt
+  dt_criacao        DateTime            @default(now()) @db.DateTime(0)
+  dt_modificacao    DateTime            @default(now()) @db.DateTime(0)
+  TB_CONEXAO_FILTRO TB_CONEXAO_FILTRO[]
+}
+
+model TB_CONEXAO_FILTRO {
+  id             BigInt     @id @default(autoincrement())
+  id_conexao     String     @db.VarChar(50)
+  nm_filtro      String     @db.VarChar(50)
+  filtro         String     @db.VarChar(50)
+  dt_criacao     DateTime   @default(now()) @db.DateTime(0)
+  dt_modificacao DateTime   @default(now()) @db.DateTime(0)
+  TB_CONEXAO     TB_CONEXAO @relation(fields: [id_conexao], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "CONEXAO_FILTRO_CONEXAO")
+
+  @@unique([id_conexao, nm_filtro, filtro], map: "id_conexao")
+}
+
+model TB_CONTROLE_CONVIVENCIA {
+  id            BigInt   @id @default(autoincrement())
+  id_execucao   String?  @db.VarChar(50)
+  dt_execucao   DateTime @db.DateTime(0)
+  objeto_resumo Json
+}
+
+model TB_DISPOSITIVO {
+  cd_dispositivo String   @id @db.VarChar(50)
+  nm_alias       String   @db.VarChar(50)
+  cd_endereco    String?  @db.VarChar(50)
+  nm_acesso      String?  @db.VarChar(50)
+  dt_criacao     DateTime @db.DateTime(0)
+  dt_modificacao DateTime @db.DateTime(0)
+}
+
+model TB_DUBLE {
+  id                     BigInt                @id @default(autoincrement())
+  id_programa            BigInt
+  nm_duble               String                @db.VarChar(50)
+  st_acao                Boolean               @db.Bit(1)
+  st_corpo               Boolean               @db.Bit(1)
+  st_ativo               Boolean               @default(dbgenerated("b'1'")) @db.Bit(1)
+  dt_criacao             DateTime              @db.DateTime(0)
+  dt_modificacao         DateTime              @db.DateTime(0)
+  cd_usuario_criacao     String                @db.VarChar(50)
+  cd_usuario_modificacao String                @db.VarChar(50)
+  TB_DUBLE_PERSONAGEM    TB_DUBLE_PERSONAGEM[]
+
+  @@index([st_ativo], map: "ATIVO_IX")
+  @@index([nm_duble], map: "NOME_IX")
+  @@index([id_programa], map: "PROGRAMA_IX")
+}
+
+model TB_DUBLE_PERSONAGEM {
+  id                       BigInt                     @id @default(autoincrement())
+  id_duble                 BigInt
+  id_personagem            BigInt?
+  dt_criacao               DateTime                   @db.DateTime(0)
+  dt_modificacao           DateTime                   @db.DateTime(0)
+  cd_usuario_criacao       String                     @db.VarChar(50)
+  cd_usuario_modificacao   String                     @db.VarChar(50)
+  TB_DUBLE                 TB_DUBLE                   @relation(fields: [id_duble], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_DUBLE")
+  TB_PERSONAGEM            TB_PERSONAGEM?             @relation(fields: [id_personagem], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PERSONAGEM")
+  TB_DUBLE_PERSONAGEM_CENA TB_DUBLE_PERSONAGEM_CENA[]
+
+  @@index([id_duble], map: "FK_DUBLE_idx")
+  @@index([id_personagem], map: "FK_PERSONAGEM_idx")
+}
+
+model TB_DUBLE_PERSONAGEM_CENA {
+  id                     BigInt              @id @default(autoincrement())
+  id_cena                BigInt
+  id_duble_personagem    BigInt
+  dt_criacao             DateTime            @db.DateTime(0)
+  dt_modificacao         DateTime            @db.DateTime(0)
+  cd_usuario_criacao     String              @db.VarChar(50)
+  cd_usuario_modificacao String              @db.VarChar(50)
+  TB_CENA                TB_CENA             @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_CENA")
+  TB_DUBLE_PERSONAGEM    TB_DUBLE_PERSONAGEM @relation(fields: [id_duble_personagem], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_DUBLE_PERSONAGEM")
+
+  @@index([id_cena], map: "FK_CENA_idx")
+  @@index([id_duble_personagem], map: "FK_DUBLE_PERSONAGEM_idx")
+}
+
+model TB_FIGURANTE {
+  id                     BigInt              @id @default(autoincrement())
+  id_programa            BigInt
+  nm_figurante           String              @db.VarChar(50)
+  st_menor_idade         Boolean             @db.Bit(1)
+  st_grupo               Boolean             @db.Bit(1)
+  st_recorrente          Boolean             @db.Bit(1)
+  st_ativo               Boolean             @default(dbgenerated("b'1'")) @db.Bit(1)
+  dt_criacao             DateTime            @db.DateTime(0)
+  dt_modificacao         DateTime            @db.DateTime(0)
+  cd_usuario_criacao     String              @db.VarChar(50)
+  cd_usuario_modificacao String              @db.VarChar(50)
+  TB_CENA_FIGURANTE      TB_CENA_FIGURANTE[]
+
+  @@index([st_ativo], map: "ATIVO_IX")
+  @@index([nm_figurante], map: "NOME_IX")
+  @@index([id_programa], map: "PROGRAMA_IX")
+}
+
+model TB_FREQUENCIA_ATOR {
+  id                     BigInt             @id @default(autoincrement())
+  id_ator                BigInt
+  id_programa            BigInt
+  id_tp_frequencia       Int                @db.TinyInt
+  id_roteiro             Int
+  st_ativo               Boolean            @db.Bit(1)
+  dt_frequencia          DateTime?          @db.DateTime(0)
+  dt_criacao             DateTime           @db.DateTime(0)
+  dt_modificacao         DateTime           @db.DateTime(0)
+  cd_usuario_criacao     String             @db.VarChar(50)
+  cd_usuario_modificacao String             @db.VarChar(50)
+  TB_TIPO_FREQUENCIA     TB_TIPO_FREQUENCIA @relation(fields: [id_tp_frequencia], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_FREQUENCIA_ATOR_TIPO_FREQUENCIA")
+
+  @@index([id_ator, st_ativo, id_programa], map: "ATOR_ATIVO_PROGRAMA_IX")
+  @@index([id_tp_frequencia], map: "TB_FREQUENCIA_ATOR_TIPO_FREQUENCIA")
+}
+
+model TB_INDISPONIBILIDADE_ATOR {
+  Id          Int       @id @default(autoincrement())
+  IdAtor      BigInt
+  DataInicio  DateTime  @db.DateTime(0)
+  DataFim     DateTime  @db.DateTime(0)
+  HoraInicio  DateTime? @db.Time(0)
+  HoraFim     DateTime? @db.Time(0)
+  Comentario  String?   @db.VarChar(200)
+  StatusAtivo Boolean?  @db.Bit(1)
+  DiaSemana   String?   @db.VarChar(20)
+  IdPrograma  BigInt
+  TB_ATOR     TB_ATOR   @relation(fields: [IdAtor], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_INDISPONIBILIDADE_ATOR_ibfk_1")
+
+  @@index([IdAtor], map: "IdAtor")
+}
+
+model TB_LOG_AUDITORIA {
+  id                   BigInt   @id @default(autoincrement())
+  nm_tabela            String   @db.VarChar(50)
+  nm_entidade          String   @db.VarChar(500)
+  id_entidade          BigInt?
+  id_entidade_composta String?  @db.VarChar(100)
+  operacao             String   @db.VarChar(3)
+  data                 DateTime @db.DateTime(0)
+  usuario              String?  @db.VarChar(100)
+  objeto_json          Json
+}
+
+model TB_OCORRENCIA {
+  id                      BigInt                  @id @default(autoincrement())
+  id_programa             BigInt
+  id_roteiro              Int
+  dt_ocorrencia           DateTime                @db.DateTime(0)
+  id_categoria            BigInt
+  id_tipo_impedimento     Int                     @db.TinyInt
+  ds_ocorrencia           String                  @db.VarChar(1000)
+  st_ativo                Boolean                 @default(dbgenerated("b'1'")) @db.Bit(1)
+  cd_usuario_criacao      String                  @db.VarChar(50)
+  cd_usuario_modificacao  String                  @db.VarChar(50)
+  dt_criacao              DateTime                @db.DateTime(0)
+  dt_modificacao          DateTime                @db.DateTime(0)
+  TB_CATEGORIA_OCORRENCIA TB_CATEGORIA_OCORRENCIA @relation(fields: [id_categoria], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "OCORRENCIA_CATEGORIA")
+  TB_TIPO_IMPEDIMENTO     TB_TIPO_IMPEDIMENTO     @relation(fields: [id_tipo_impedimento], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "OCORRENCIA_TIPO_IMPEDIMENTO")
+  TB_OCORRENCIA_ANEXO     TB_OCORRENCIA_ANEXO[]
+  TB_OCORRENCIA_ATOR      TB_OCORRENCIA_ATOR[]
+  TB_OCORRENCIA_CENA      TB_OCORRENCIA_CENA[]
+
+  @@index([id_categoria], map: "OCORRENCIA_CATEGORIA")
+  @@index([id_tipo_impedimento], map: "OCORRENCIA_TIPO_IMPEDIMENTO")
+  @@index([id_programa, st_ativo], map: "PROGRAMA_ATIVO_IX")
+}
+
+model TB_OCORRENCIA_ANEXO {
+  id_ocorrencia BigInt
+  nm_anexo      String        @db.VarChar(50)
+  TB_OCORRENCIA TB_OCORRENCIA @relation(fields: [id_ocorrencia], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "OCORRENCIA_ANEXO_OCORRENCIA")
+
+  @@id([id_ocorrencia, nm_anexo])
+}
+
+model TB_OCORRENCIA_ATOR {
+  id_ocorrencia BigInt
+  id_ator       BigInt
+  TB_OCORRENCIA TB_OCORRENCIA @relation(fields: [id_ocorrencia], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "OCORRENCIA_ATOR_OCORRENCIA")
+
+  @@id([id_ocorrencia, id_ator])
+}
+
+model TB_OCORRENCIA_CENA {
+  id_ocorrencia BigInt
+  id_cena       BigInt
+  TB_OCORRENCIA TB_OCORRENCIA @relation(fields: [id_ocorrencia], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "OCORRENCIA_CENA_OCORRENCIA")
+
+  @@id([id_ocorrencia, id_cena])
+}
+
+model TB_PAINEL {
+  cd_painel              String                @id @db.VarChar(11)
+  cd_mac_address         String?               @db.VarChar(11)
+  id_roteiro             Int?
+  id_programa            BigInt?
+  id_st_painel           Int                   @db.TinyInt
+  nm_grupo               String?               @db.VarChar(50)
+  cd_token_identificacao String?               @db.VarChar(2000)
+  cd_token_atualizacao   String?               @db.VarChar(2000)
+  cd_token_usuario       String?               @db.VarChar(2000)
+  dt_criacao             DateTime              @db.DateTime(0)
+  dt_modificacao         DateTime              @db.DateTime(0)
+  cd_dispositivo         String?               @db.VarChar(11)
+  TB_STATUS_DISPOSITIVO  TB_STATUS_DISPOSITIVO @relation(fields: [id_st_painel], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_DISPOSITIVO_STATUS_DISPOSITIVO")
+
+  @@index([id_st_painel], map: "TB_DISPOSITIVO_STATUS_DISPOSITIVO_idx")
+  @@index([cd_painel], map: "TB_PAINEL_DISPOSITIVO_idx")
+  @@index([cd_mac_address], map: "TB_PAINEL_DISPOSITIVO_idx1")
+}
+
+model TB_PERSONAGEM {
+  id                     BigInt                   @id @default(autoincrement())
+  id_programa            BigInt
+  id_tp_personagem       Int?                     @db.SmallInt
+  st_ativo               Boolean                  @default(dbgenerated("b'1'")) @db.Bit(1)
+  cd_usuario_criacao     String                   @db.VarChar(50)
+  cd_usuario_modificacao String                   @db.VarChar(50)
+  dt_criacao             DateTime                 @db.DateTime(0)
+  dt_modificacao         DateTime                 @db.DateTime(0)
+  nm_personagem          String                   @db.VarChar(50)
+  id_ator                BigInt?
+  TB_CENA_PERSONAGEM     TB_CENA_PERSONAGEM[]
+  TB_CENA_TEXTO          TB_CENA_TEXTO[]
+  TB_DUBLE_PERSONAGEM    TB_DUBLE_PERSONAGEM[]
+  TB_ATOR                TB_ATOR?                 @relation(fields: [id_ator], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_PERSONAGEM_FK")
+  TB_PERSONAGEM_SINONIMO TB_PERSONAGEM_SINONIMO[]
+
+  @@index([id_programa], map: "PROGRAMA_IX")
+  @@index([id_ator], map: "TB_PERSONAGEM_FK")
+}
+
+model TB_PERSONAGEM_SINONIMO {
+  id                       BigInt        @id @default(autoincrement())
+  id_personagem            BigInt
+  nm_personagem_temporario String        @db.VarChar(100)
+  cd_usuario_criacao       String        @db.VarChar(50)
+  cd_usuario_modificacao   String        @db.VarChar(50)
+  dt_criacao               DateTime      @db.DateTime(0)
+  dt_modificacao           DateTime      @db.DateTime(0)
+  TB_PERSONAGEM            TB_PERSONAGEM @relation(fields: [id_personagem], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_sinonimo_personagem_personagem")
+
+  @@index([id_personagem], map: "fk_sinonimo_personagem_personagem_idx")
+  @@index([nm_personagem_temporario], map: "ix_nm_personagem")
+}
+
+model TB_ROTEIRO {
+  id                        BigInt                     @id @default(autoincrement())
+  id_programa               BigInt
+  id_tp_roteiro             Int                        @db.TinyInt
+  data_gravacao             DateTime                   @db.Date
+  inicio_gravacao           DateTime?                  @db.Time(0)
+  fim_gravacao              DateTime?                  @db.Time(0)
+  inicio_almoco             DateTime?                  @db.Time(0)
+  saida_gravacao            DateTime?                  @db.Time(0)
+  nm_diretor_frente         String?                    @db.VarChar(256)
+  st_ativo                  Boolean                    @default(dbgenerated("b'1'")) @db.Bit(1)
+  cd_usuario_criacao        String                     @db.VarChar(50)
+  cd_usuario_modificacao    String                     @db.VarChar(50)
+  dt_criacao                DateTime                   @db.DateTime(0)
+  dt_modificacao            DateTime                   @db.DateTime(0)
+  id_numero                 Int
+  ds_observacao             String?                    @db.VarChar(500)
+  ds_recado_gerente         String?                    @db.VarChar(1000)
+  TB_ROTEIRO_CENA           TB_ROTEIRO_CENA[]
+  TB_ROTEIRO_LOCAL_GRAVACAO TB_ROTEIRO_LOCAL_GRAVACAO?
+  TB_ROTEIRO_PERSONAGEM     TB_ROTEIRO_PERSONAGEM[]
+  TB_ROTEIRO_STATUS         TB_ROTEIRO_STATUS[]
+
+  @@unique([id_programa, id_numero], map: "TB_ROTEIRO_UN")
+  @@index([id_programa, data_gravacao], map: "tb_roteiro_id_programa_IDX")
+}
+
+model TB_ROTEIRO_CENA {
+  id_roteiro             BigInt
+  id_cena                BigInt
+  id_numero_ordem        Int
+  st_cena_roteiro        Int        @db.TinyInt
+  cd_usuario_criacao     String     @db.VarChar(50)
+  cd_usuario_modificacao String     @db.VarChar(50)
+  dt_criacao             DateTime   @db.DateTime(0)
+  dt_modificacao         DateTime   @db.DateTime(0)
+  TB_CENA                TB_CENA    @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tb_roteiro_cena_cena_FK")
+  TB_ROTEIRO             TB_ROTEIRO @relation(fields: [id_roteiro], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tb_roteiro_cena_roteiro_FK")
+
+  @@id([id_roteiro, id_cena])
+  @@index([id_cena], map: "tb_roteiro_cena_cena_FK")
+}
+
+model TB_ROTEIRO_CENA_TEMPORARIA {
+  id                     BigInt   @id @default(autoincrement())
+  id_roteiro             BigInt
+  id_cena                BigInt
+  id_numero_ordem        Int
+  st_cena_roteiro        Int      @db.TinyInt
+  cd_usuario_criacao     String   @db.VarChar(50)
+  cd_usuario_modificacao String   @db.VarChar(50)
+  dt_criacao             DateTime @db.DateTime(0)
+  dt_modificacao         DateTime @db.DateTime(0)
+}
+
+model TB_ROTEIRO_LOCAL_GRAVACAO {
+  id_roteiro             BigInt     @id
+  nm_local_gravacao      String     @db.VarChar(100)
+  endereco               String?    @db.VarChar(280)
+  cd_usuario_criacao     String     @db.VarChar(50)
+  cd_usuario_modificacao String     @db.VarChar(50)
+  dt_criacao             DateTime   @db.DateTime(0)
+  dt_modificacao         DateTime   @db.DateTime(0)
+  TB_ROTEIRO             TB_ROTEIRO @relation(fields: [id_roteiro], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "id_roteiro_local_roteiro_fk")
+}
+
+model TB_ROTEIRO_PERSONAGEM {
+  id                       BigInt     @id @default(autoincrement())
+  id_roteiro               BigInt
+  id_personagem            BigInt?
+  nm_temporario_personagem String?    @db.VarChar(50)
+  hora_chegada             DateTime?  @db.Time(0)
+  ds_comentario            String?    @db.VarChar(300)
+  cd_usuario_criacao       String     @db.VarChar(50)
+  cd_usuario_modificacao   String     @db.VarChar(50)
+  dt_criacao               DateTime   @db.DateTime(0)
+  dt_modificacao           DateTime   @db.DateTime(0)
+  TB_ROTEIRO               TB_ROTEIRO @relation(fields: [id_roteiro], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tb_roteiro_personagem_roteiro_FK")
+
+  @@unique([id_roteiro, nm_temporario_personagem, id_personagem], map: "UNIQUE_PERSONAGEM_ROTEIRO_NOME")
+  @@index([id_personagem], map: "tb_roteiro_personagem_personagem_FK")
+}
+
+model TB_ROTEIRO_STATUS {
+  id                     BigInt     @id @default(autoincrement())
+  id_roteiro             BigInt
+  st_roteiro             Int        @db.TinyInt
+  ds_comentario          String?    @db.VarChar(256)
+  cd_usuario_criacao     String     @db.VarChar(50)
+  cd_usuario_modificacao String     @db.VarChar(50)
+  dt_criacao             DateTime   @db.DateTime(0)
+  dt_modificacao         DateTime   @db.DateTime(0)
+  TB_ROTEIRO             TB_ROTEIRO @relation(fields: [id_roteiro], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_ROTEIRO_STATUS_FK")
+
+  @@index([id_roteiro], map: "id_roteiro_IDX")
+}
+
+model TB_STATUS_CAPITULO {
+  id          Int           @id @db.TinyInt
+  nm_status   String        @db.VarChar(50)
+  TB_CAPITULO TB_CAPITULO[]
+}
+
+model TB_STATUS_DISPOSITIVO {
+  id        Int         @id @db.TinyInt
+  nm_status String      @db.VarChar(50)
+  TB_PAINEL TB_PAINEL[]
+}
+
+model TB_TAG {
+  id                     BigInt        @id @default(autoincrement())
+  nm_tag                 String        @unique(map: "NM_TAG_UNIQUE") @db.VarChar(50)
+  cd_usuario_criacao     String        @db.VarChar(50)
+  cd_usuario_modificacao String        @db.VarChar(50)
+  dt_criacao             DateTime      @db.DateTime(0)
+  dt_modificacao         DateTime      @db.DateTime(0)
+  TB_CENA_TAG            TB_CENA_TAG[]
+}
+
+model TB_TIPO_AMBIENTE {
+  id      Int    @id @db.TinyInt
+  nm_tipo String @db.VarChar(50)
+}
+
+model TB_TIPO_CENA {
+  id      Int       @id @db.TinyInt
+  nm_tipo String    @db.VarChar(50)
+  TB_CENA TB_CENA[]
+}
+
+model TB_TIPO_DIALOGO {
+  id            Int             @id @db.TinyInt
+  nm_tipo       String          @db.VarChar(50)
+  TB_CENA_TEXTO TB_CENA_TEXTO[]
+}
+
+model TB_TIPO_ESPACO_CENA {
+  id      Int       @id @unique(map: "ID_UNIQUE") @db.TinyInt
+  nm_tipo String    @db.VarChar(50)
+  TB_CENA TB_CENA[]
+}
+
+model TB_TIPO_EXECUCAO {
+  id               Int                @id @unique(map: "ID_UNIQUE") @db.TinyInt
+  nm_tipo_execucao String             @db.VarChar(50)
+  TB_CENA_EXECUCAO TB_CENA_EXECUCAO[]
+}
+
+model TB_TIPO_FREQUENCIA {
+  id                 Int                  @id @db.TinyInt
+  nm_tipo            String               @db.VarChar(50)
+  TB_FREQUENCIA_ATOR TB_FREQUENCIA_ATOR[]
+}
+
+model TB_TIPO_IMPEDIMENTO {
+  id                  Int             @id @unique(map: "ID_UNIQUE") @db.TinyInt
+  nm_tipo_impedimento String          @db.VarChar(50)
+  TB_OCORRENCIA       TB_OCORRENCIA[]
+}
+
+model TB_TIPO_PERIODO_CENICO {
+  id                Int       @id @unique(map: "ID_UNIQUE") @db.TinyInt
+  nm_periodo_cenico String    @db.VarChar(50)
+  TB_CENA           TB_CENA[]
+}
+
+model TB_TIPO_TEXTO {
+  id            Int             @id @db.TinyInt
+  nm_tipo       String          @db.VarChar(50)
+  TB_CENA_TEXTO TB_CENA_TEXTO[]
 }

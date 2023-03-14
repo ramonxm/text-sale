@@ -1,0 +1,10 @@
+version: "3"
+services:
+  app:
+    image: mysql
+    container_name: mysqlsale
+    environment:
+      - MYSQL_PASSWORD=root
+      - MYSQL_ROOT_PASSWORD=root
+    ports:
+      - "3306:3306"
