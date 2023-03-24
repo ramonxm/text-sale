@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import styles from "./index.module.css";
 import { type NextPage } from "next";
 import Head from "next/head";
@@ -64,7 +62,7 @@ const Home: NextPage = () => {
         <link rel="shortcut icon" href="/favicon.ico" />
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:url" content="https://yourdomain.com" />
-        <meta name="twitter:title" content="PWA App" />
+        <meta name="twitter:title" content="TextSale" />
         <meta name="twitter:description" content="Best PWA App in the world" />
         <meta
           name="twitter:image"
@@ -72,7 +70,7 @@ const Home: NextPage = () => {
         />
         <meta name="twitter:creator" content="@DavidWShadow" />
         <meta property="og:type" content="website" />
-        <meta property="og:title" content="PWA App" />
+        <meta property="og:title" content="TextSale" />
         <meta property="og:description" content="Best PWA App in the world" />
         <meta property="og:site_name" content="PWA App" />
         <meta property="og:url" content="https://yourdomain.com" />
