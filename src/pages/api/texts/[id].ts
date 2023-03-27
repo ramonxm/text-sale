@@ -1,28 +1,9 @@
-import { Server } from "socket.io";
 import {
   type NextApiHandler,
   type NextApiRequest,
   type NextApiResponse,
 } from "next";
-import { PrismaClient } from "@prisma/client";
-
-const io = new Server();
-
-io.on("connection", (socket) => {
-  console.log("A user connected");
-
-  socket.on("message", (data) => {
-    console.log("Received message:", data);
-
-    io.emit("message", data);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("A user disconnected");
-  });
-});
-
-const prisma = new PrismaClient();
+import { prisma } from "~/server/db";
 
 const handler: NextApiHandler = async (
   req: NextApiRequest,

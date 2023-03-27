@@ -3,24 +3,24 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model TB_AMBIENTE {
   id                         Int     @id @default(autoincrement())
   id_cenario                 Int
-  id_tp_classificacao_padrao Int?       @db.TinyInt
+  id_tp_classificacao_padrao Int?       @db.SmallInt
   nm_ambiente                String     @db.VarChar(50)
   cd_usuario_criacao         String     @db.VarChar(50)
   cd_usuario_modificacao     String     @db.VarChar(50)
-  dt_criacao                 DateTime   @db.DateTime(0)
-  dt_modificacao             DateTime   @db.DateTime(0)
-  st_ativo                   Boolean    @default(dbgenerated("b'1'")) @db.Bit(1)
-  TB_CENARIO                 TB_CENARIO @relation(fields: [id_cenario], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CENA_AMBIENTE_CENARIO")
+  dt_criacao                 DateTime   @db.Timestamp(6)
+  dt_modificacao             DateTime   @db.Timestamp(6)
+  st_ativo                   String     @default("1") @db.VarBit(1)
+  TB_CENARIO                 TB_CENARIO @relation(fields: [id_cenario], references: [id], onDelete: NoAction, onUpdate: NoAction)
   TB_CENA                    TB_CENA[]
 
-  @@index([id_cenario], map: "TB_CENA_AMBIENTE_CENARIO_IDX")
+  @@index([id_cenario])
 }
 
 model TB_AMBIENTE_SINONIMO {
@@ -29,20 +29,20 @@ model TB_AMBIENTE_SINONIMO {
   nm_ambiente            String   @db.VarChar(50)
   cd_usuario_criacao     String   @db.VarChar(50)
   cd_usuario_modificacao String   @db.VarChar(50)
-  dt_criacao             DateTime @db.DateTime(0)
-  dt_modificacao         DateTime @db.DateTime(0)
+  dt_criacao             DateTime @db.Timestamp(6)
+  dt_modificacao         DateTime @db.Timestamp(6)
 }
 
 model TB_ATOR {
   id                        Int                      @id
   nm_ator                   String                      @db.VarChar(50)
-  st_ativo                  Boolean                     @default(dbgenerated("b'1'")) @db.Bit(1)
+  st_ativo                  String                      @default("1") @db.VarBit(1)
   cd_usuario_criacao        String                      @db.VarChar(50)
   cd_usuario_modificacao    String                      @db.VarChar(50)
-  dt_criacao                DateTime                    @db.DateTime(0)
-  dt_modificacao            DateTime                    @db.DateTime(0)
-  tp_genero                 Int?                        @db.TinyInt
-  disponivel                Boolean?
+  dt_criacao                DateTime                    @db.Timestamp(6)
+  dt_modificacao            DateTime                    @db.Timestamp(6)
+  tp_genero                 Int?                        @db.SmallInt
+  disponivel                Int?                        @db.SmallInt
   TB_INDISPONIBILIDADE_ATOR TB_INDISPONIBILIDADE_ATOR[]
   TB_PERSONAGEM             TB_PERSONAGEM[]
 }
@@ -52,101 +52,101 @@ model TB_CAPITULO {
   id_programa            Int
   id_numero              Int
   id_bloco               Int?
-  id_st_capitulo         Int?                @db.TinyInt
+  id_st_capitulo         Int?                @db.SmallInt
   id_versao              String?             @db.Char(32)
   nm_versao              String?             @db.Char(5)
   nm_arquivo             String?             @db.VarChar(50)
   nm_episodio            String?             @db.VarChar(50)
-  st_secreto             Boolean?            @db.Bit(1)
-  st_ativo               Boolean             @default(dbgenerated("b'1'")) @db.Bit(1)
-  dt_exibicao            DateTime?           @db.DateTime(0)
-  dt_gravacao            DateTime?           @db.DateTime(0)
-  dt_arquivo             DateTime            @db.DateTime(0)
-  dt_criacao             DateTime            @db.DateTime(0)
-  dt_modificacao         DateTime            @db.DateTime(0)
+  st_secreto             String?             @db.VarBit(1)
+  st_ativo               String              @default("1") @db.VarBit(1)
+  dt_exibicao            DateTime?           @db.Timestamp(6)
+  dt_gravacao            DateTime?           @db.Timestamp(6)
+  dt_arquivo             DateTime            @db.Timestamp(6)
+  dt_criacao             DateTime            @db.Timestamp(6)
+  dt_modificacao         DateTime            @db.Timestamp(6)
   cd_usuario_criacao     String              @db.VarChar(50)
   cd_usuario_modificacao String              @db.VarChar(50)
   id_tamanho_original    Decimal?            @db.Decimal(10, 2)
-  TB_CAPITULO_BLOCO      TB_CAPITULO_BLOCO?  @relation(fields: [id_bloco], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CAPITULO_BLOCO")
-  TB_STATUS_CAPITULO     TB_STATUS_CAPITULO? @relation(fields: [id_st_capitulo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CAPITULO_STATUS_CAPITULO")
+  TB_CAPITULO_BLOCO      TB_CAPITULO_BLOCO?  @relation(fields: [id_bloco], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  TB_STATUS_CAPITULO     TB_STATUS_CAPITULO? @relation(fields: [id_st_capitulo], references: [id], onDelete: NoAction, onUpdate: NoAction)
   TB_CENA                TB_CENA[]
 
-  @@index([id_bloco], map: "TB_CAPITULO_BLOCO")
-  @@index([id_st_capitulo], map: "TB_CAPITULO_STATUS_CAPITULO")
-  @@index([id_numero], map: "TB_CAPITULO_id_numero_IDX")
-  @@index([id_programa], map: "TB_CAPITULO_id_programa_IDX")
+  @@index([id_bloco])
+  @@index([id_numero])
+  @@index([id_programa])
+  @@index([id_st_capitulo])
 }
 
 model TB_CAPITULO_BLOCO {
   id                     Int        @id @default(autoincrement())
   id_programa            Int
-  id_tamanho             Int           @db.TinyInt
+  id_tamanho             Int           @db.SmallInt
   id_numero              Int
   nm_bloco               String        @db.VarChar(50)
   cd_usuario_criacao     String        @db.VarChar(50)
   cd_usuario_modificacao String        @db.VarChar(50)
-  dt_criacao             DateTime      @db.DateTime(0)
-  dt_modificacao         DateTime      @db.DateTime(0)
+  dt_criacao             DateTime      @db.Timestamp(6)
+  dt_modificacao         DateTime      @db.Timestamp(6)
   TB_CAPITULO            TB_CAPITULO[]
 
-  @@unique([id_numero, id_programa], map: "UNIQUE_NUMERO_PROGRAMA")
-  @@index([id_programa], map: "TB_CAPITULO_BLOCO_id_programa_IDX")
+  @@unique([id_numero, id_programa], map: "TB_CAPITULO_BLOCO_id_numero_id_programa_idx")
+  @@index([id_programa])
 }
 
 model TB_CATEGORIA_CENA {
-  id           Int       @id @db.TinyInt
+  id           Int       @id @db.SmallInt
   nm_categoria String    @db.VarChar(50)
   TB_CENA      TB_CENA[]
 }
 
 model TB_CATEGORIA_OCORRENCIA {
-  id            Int          @id @unique(map: "ID_UNIQUE")
+  id            Int          @id @unique(map: "TB_CATEGORIA_OCORRENCIA_id_idx")
   id_pai        Int?
   nm_categoria  String          @db.VarChar(50)
-  st_ativo      Boolean         @default(dbgenerated("b'1'")) @db.Bit(1)
-  st_elenco     Boolean         @default(dbgenerated("b'0'")) @db.Bit(1)
+  st_ativo      String          @default("1") @db.VarBit(1)
+  st_elenco     String          @default("0") @db.VarBit(1)
   TB_OCORRENCIA TB_OCORRENCIA[]
 
-  @@index([id_pai], map: "CATEGORIA_PAI_IDX")
+  @@index([id_pai])
 }
 
 model TB_CENA {
   id                                                               Int                     @id @default(autoincrement())
-  id_numero                                                        Int?                       @db.TinyInt
-  id_pagina                                                        Int                        @default(0) @db.TinyInt
+  id_numero                                                        Int?                       @db.SmallInt
+  id_pagina                                                        Int                        @default(0) @db.SmallInt
   id_cenario                                                       Int?
   id_tamanho                                                       Decimal                    @default(0.000) @db.Decimal(10, 3)
   id_ambiente                                                      Int?
-  id_tp_periodo_cenico                                             Int?                       @db.TinyInt
-  id_tp_hora_cenica                                                Int?                       @db.TinyInt
-  id_tp_espaco_cena                                                Int?                       @db.TinyInt
-  id_tp_categoria_cena                                             Int?                       @db.TinyInt
-  id_tp_classificacao_cena                                         Int?                       @db.TinyInt
-  id_st_cena                                                       Int                        @default(1) @db.TinyInt
-  id_tp_acesso                                                     Int?                       @db.TinyInt
-  id_numero_dias_antes_gravacao                                    Int?                       @db.TinyInt
+  id_tp_periodo_cenico                                             Int?                       @db.SmallInt
+  id_tp_hora_cenica                                                Int?                       @db.SmallInt
+  id_tp_espaco_cena                                                Int?                       @db.SmallInt
+  id_tp_categoria_cena                                             Int?                       @db.SmallInt
+  id_tp_classificacao_cena                                         Int?                       @db.SmallInt
+  id_st_cena                                                       Int                        @default(1) @db.SmallInt
+  id_tp_acesso                                                     Int?                       @db.SmallInt
+  id_numero_dias_antes_gravacao                                    Int?                       @db.SmallInt
   cd_letra                                                         String?                    @db.Char(2)
-  st_secreta                                                       Boolean                    @default(dbgenerated("b'0'")) @db.Bit(1)
-  st_gravar                                                        Boolean                    @default(dbgenerated("b'1'")) @db.Bit(1)
-  st_sem_ambiente                                                  Boolean                    @default(dbgenerated("b'0'")) @db.Bit(1)
-  st_ativo                                                         Boolean                    @default(dbgenerated("b'1'")) @db.Bit(1)
+  st_secreta                                                       String                     @default("0") @db.VarBit(1)
+  st_gravar                                                        String                     @default("1") @db.VarBit(1)
+  st_sem_ambiente                                                  String                     @default("0") @db.VarBit(1)
+  st_ativo                                                         String                     @default("1") @db.VarBit(1)
   ds_cenario_temporario                                            String?                    @db.VarChar(100)
   ds_ambiente_temporario                                           String?                    @db.VarChar(100)
   ds_resumo                                                        String?                    @db.VarChar(10000)
   cd_usuario_criacao                                               String                     @db.VarChar(50)
   cd_usuario_modificacao                                           String                     @db.VarChar(50)
-  dt_expiracao_sigilo                                              DateTime?                  @db.DateTime(0)
-  dt_criacao                                                       DateTime                   @db.DateTime(0)
-  dt_modificacao                                                   DateTime                   @db.DateTime(0)
+  dt_expiracao_sigilo                                              DateTime?                  @db.Timestamp(6)
+  dt_criacao                                                       DateTime                   @db.Timestamp(6)
+  dt_modificacao                                                   DateTime                   @db.Timestamp(6)
   id_capitulo                                                      Int
   ds_observacao                                                    String?                    @db.VarChar(280)
-  TB_CATEGORIA_CENA                                                TB_CATEGORIA_CENA?         @relation(fields: [id_tp_categoria_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cena_categoria_cena")
-  TB_TIPO_CENA                                                     TB_TIPO_CENA?              @relation(fields: [id_tp_classificacao_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cena_classificacao_cena")
-  TB_TIPO_ESPACO_CENA                                              TB_TIPO_ESPACO_CENA?       @relation(fields: [id_tp_espaco_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cena_espaco_cena")
-  TB_TIPO_PERIODO_CENICO                                           TB_TIPO_PERIODO_CENICO?    @relation(fields: [id_tp_periodo_cenico], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cena_periodo_cenico")
-  TB_AMBIENTE                                                      TB_AMBIENTE?               @relation(fields: [id_ambiente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tb_cena_ambiente")
-  TB_CENARIO                                                       TB_CENARIO?                @relation(fields: [id_cenario], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tb_cena_cenario")
-  TB_CAPITULO                                                      TB_CAPITULO                @relation(fields: [id_capitulo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tb_cena_tb_capitulo")
+  TB_AMBIENTE                                                      TB_AMBIENTE?               @relation(fields: [id_ambiente], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  TB_CAPITULO                                                      TB_CAPITULO                @relation(fields: [id_capitulo], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  TB_CENARIO                                                       TB_CENARIO?                @relation(fields: [id_cenario], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  TB_CATEGORIA_CENA                                                TB_CATEGORIA_CENA?         @relation(fields: [id_tp_categoria_cena], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  TB_TIPO_CENA                                                     TB_TIPO_CENA?              @relation(fields: [id_tp_classificacao_cena], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  TB_TIPO_ESPACO_CENA                                              TB_TIPO_ESPACO_CENA?       @relation(fields: [id_tp_espaco_cena], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  TB_TIPO_PERIODO_CENICO                                           TB_TIPO_PERIODO_CENICO?    @relation(fields: [id_tp_periodo_cenico], references: [id], onDelete: NoAction, onUpdate: NoAction)
   TB_CENA_FIGURANTE                                                TB_CENA_FIGURANTE[]
   TB_CENA_PERSONAGEM                                               TB_CENA_PERSONAGEM[]
   TB_CENA_SEQUENCIA_TB_CENA_SEQUENCIA_id_cenaToTB_CENA             TB_CENA_SEQUENCIA[]        @relation("TB_CENA_SEQUENCIA_id_cenaToTB_CENA")
@@ -157,16 +157,16 @@ model TB_CENA {
   TB_DUBLE_PERSONAGEM_CENA                                         TB_DUBLE_PERSONAGEM_CENA[]
   TB_ROTEIRO_CENA                                                  TB_ROTEIRO_CENA[]
 
-  @@index([cd_letra], map: "LETRA_IX")
-  @@index([id_capitulo], map: "TB_CENA_TB_CAPITULO_id_fk")
-  @@index([id_numero], map: "TB_CENA_id_numero_IDX")
-  @@index([st_ativo], map: "TB_CENA_st_ativo_IDX")
-  @@index([id_ambiente], map: "ambiente_ix")
-  @@index([id_cenario], map: "cenario_ix")
-  @@index([id_tp_categoria_cena], map: "fk_cena_categoria_cena_idx")
-  @@index([id_tp_classificacao_cena], map: "fk_cena_classificacao_cena_idx")
-  @@index([id_tp_espaco_cena], map: "fk_cena_espaco_cena_idx")
-  @@index([id_tp_periodo_cenico], map: "fk_cena_periodo_cenico_idx")
+  @@index([cd_letra])
+  @@index([id_ambiente])
+  @@index([id_capitulo])
+  @@index([id_cenario])
+  @@index([id_numero])
+  @@index([id_tp_categoria_cena])
+  @@index([id_tp_classificacao_cena])
+  @@index([id_tp_espaco_cena])
+  @@index([id_tp_periodo_cenico])
+  @@index([st_ativo])
 }
 
 model TB_CENARIO {
@@ -175,14 +175,14 @@ model TB_CENARIO {
   nm_cenario             String                @db.VarChar(50)
   cd_usuario_criacao     String                @db.VarChar(50)
   cd_usuario_modificacao String                @db.VarChar(50)
-  dt_criacao             DateTime              @db.DateTime(0)
-  dt_modificacao         DateTime              @db.DateTime(0)
-  st_ativo               Boolean               @default(dbgenerated("b'1'")) @db.Bit(1)
+  dt_criacao             DateTime              @db.Timestamp(6)
+  dt_modificacao         DateTime              @db.Timestamp(6)
+  st_ativo               String                @default("1") @db.VarBit(1)
   TB_AMBIENTE            TB_AMBIENTE[]
   TB_CENA                TB_CENA[]
   TB_CENARIO_SINONIMO    TB_CENARIO_SINONIMO[]
 
-  @@index([st_ativo, id_programa], map: "PROGRAMA_ATIVO_IX")
+  @@index([st_ativo, id_programa])
 }
 
 model TB_CENARIO_SINONIMO {
@@ -191,29 +191,29 @@ model TB_CENARIO_SINONIMO {
   nm_cenario             String     @db.VarChar(50)
   cd_usuario_criacao     String     @db.VarChar(50)
   cd_usuario_modificacao String     @db.VarChar(50)
-  dt_criacao             DateTime   @db.DateTime(0)
-  dt_modificacao         DateTime   @db.DateTime(0)
-  TB_CENARIO             TB_CENARIO @relation(fields: [id_cenario], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "CENARIO_FK")
+  dt_criacao             DateTime   @db.Timestamp(6)
+  dt_modificacao         DateTime   @db.Timestamp(6)
+  TB_CENARIO             TB_CENARIO @relation(fields: [id_cenario], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([id_cenario], map: "CENARIO_FK_IX")
+  @@index([id_cenario])
 }
 
 model TB_CENA_EXECUCAO {
   id                     Int           @id @default(autoincrement())
   id_cena                Int
   id_roteiro             Int
-  id_tp_execucao         Int              @db.TinyInt
-  dt_execucao            DateTime         @db.DateTime(0)
-  st_hora_manual         Boolean          @default(dbgenerated("b'0'")) @db.Bit(1)
-  st_ativo               Boolean          @default(dbgenerated("b'1'")) @db.Bit(1)
+  id_tp_execucao         Int              @db.SmallInt
+  dt_execucao            DateTime         @db.Timestamp(6)
+  st_hora_manual         String           @default("0") @db.VarBit(1)
+  st_ativo               String           @default("1") @db.VarBit(1)
   cd_usuario_criacao     String           @db.VarChar(50)
   cd_usuario_modificacao String           @db.VarChar(50)
-  dt_criacao             DateTime         @db.DateTime(0)
-  dt_modificacao         DateTime         @db.DateTime(0)
-  TB_TIPO_EXECUCAO       TB_TIPO_EXECUCAO @relation(fields: [id_tp_execucao], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "CENA_EXECUCAO_TIPO_EXECUCAO")
+  dt_criacao             DateTime         @db.Timestamp(6)
+  dt_modificacao         DateTime         @db.Timestamp(6)
+  TB_TIPO_EXECUCAO       TB_TIPO_EXECUCAO @relation(fields: [id_tp_execucao], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([id_tp_execucao], map: "CENA_EXECUCAO_TIPO_EXECUCAO_IDX")
-  @@index([id_cena, st_ativo], map: "TB_CENA_EXECUCAO_id_cena_IDX")
+  @@index([id_cena, st_ativo])
+  @@index([id_tp_execucao])
 }
 
 model TB_CENA_FIGURANTE {
@@ -222,13 +222,13 @@ model TB_CENA_FIGURANTE {
   id_figurante           Int
   cd_usuario_criacao     String       @db.VarChar(50)
   cd_usuario_modificacao String       @db.VarChar(50)
-  dt_criacao             DateTime     @db.DateTime(0)
-  dt_modificacao         DateTime     @db.DateTime(0)
-  TB_CENA                TB_CENA      @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "id_cena_FK")
-  TB_FIGURANTE           TB_FIGURANTE @relation(fields: [id_figurante], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "id_figurante_FK")
+  dt_criacao             DateTime     @db.Timestamp(6)
+  dt_modificacao         DateTime     @db.Timestamp(6)
+  TB_CENA                TB_CENA      @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  TB_FIGURANTE           TB_FIGURANTE @relation(fields: [id_figurante], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([id_cena], map: "id_cena_FK_idx")
-  @@index([id_figurante], map: "id_figurante_FK")
+  @@index([id_cena])
+  @@index([id_figurante])
 }
 
 model TB_CENA_ORDEM {
@@ -236,59 +236,58 @@ model TB_CENA_ORDEM {
   id_cena                Int
   id_ordem               Int
   id_roteiro             Int
-  st_ativo               Boolean  @db.Bit(1)
+  st_ativo               String   @db.VarBit(1)
   cd_usuario_criacao     String   @db.VarChar(50)
   cd_usuario_modificacao String   @db.VarChar(50)
-  dt_criacao             DateTime @db.DateTime(0)
-  dt_modificacao         DateTime @db.DateTime(0)
+  dt_criacao             DateTime @db.Timestamp(6)
+  dt_modificacao         DateTime @db.Timestamp(6)
 
-  @@index([id_cena, st_ativo], map: "TB_CENA_ORDEM_id_cena_IDX")
+  @@index([id_cena, st_ativo])
 }
 
 model TB_CENA_PERSONAGEM {
-  id                       Int         @id @default(autoincrement())
+  id                       Int   @id @default(autoincrement())
   id_personagem            Int?
   id_cena                  Int
-  nm_temporario_personagem String?        @db.VarChar(50)
-  cd_usuario_criacao       String         @db.VarChar(50)
-  cd_usuario_modificacao   String         @db.VarChar(50)
-  dt_criacao               DateTime       @db.DateTime(0)
-  dt_modificacao           DateTime       @db.DateTime(0)
-  TB_PERSONAGEM            TB_PERSONAGEM? @relation(fields: [id_personagem], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CENA_PERSONAGEM_PERSONAGEM")
-  TB_CENA                  TB_CENA        @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CENA_PERSONAGEM_TEMPORARIO_CENA")
+  nm_temporario_personagem String?  @db.VarChar(50)
+  cd_usuario_criacao       String   @db.VarChar(50)
+  cd_usuario_modificacao   String   @db.VarChar(50)
+  dt_criacao               DateTime @db.Timestamp(6)
+  dt_modificacao           DateTime @db.Timestamp(6)
+  TB_CENA                  TB_CENA  @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@unique([id_personagem, id_cena, nm_temporario_personagem], map: "UNIQUE_PERSONAGEM_CENA_NOME")
-  @@index([id_personagem], map: "TB_CENA_PERSONAGEM_PERSONAGEM_idx")
-  @@index([id_cena], map: "TB_CENA_PERSONAGEM_TEMPORARIO_CENA")
-  @@index([nm_temporario_personagem], map: "TB_CENA_PERSONAGEM_nm_temporario_personagem_index")
+  @@unique([id_personagem, id_cena, nm_temporario_personagem], map: "TB_CENA_PERSONAGEM_id_pers08a91-f4de-484a-a994-23fb45f97e96_idx")
+  @@index([id_cena])
+  @@index([id_personagem])
+  @@index([nm_temporario_personagem])
 }
 
 model TB_CENA_SEQUENCIA {
   id_cena                                                Int
   id_cena_relacionada                                    Int
-  id_ordem                                               Int      @db.TinyInt
+  id_ordem                                               Int      @db.SmallInt
   cd_usuario_criacao                                     String   @db.VarChar(50)
   cd_usuario_modificacao                                 String   @db.VarChar(50)
-  dt_criacao                                             DateTime @db.DateTime(0)
-  dt_modificacao                                         DateTime @db.DateTime(0)
-  TB_CENA_TB_CENA_SEQUENCIA_id_cenaToTB_CENA             TB_CENA  @relation("TB_CENA_SEQUENCIA_id_cenaToTB_CENA", fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_DISPOSITIVO_TB_CENA")
-  TB_CENA_TB_CENA_SEQUENCIA_id_cena_relacionadaToTB_CENA TB_CENA  @relation("TB_CENA_SEQUENCIA_id_cena_relacionadaToTB_CENA", fields: [id_cena_relacionada], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_DISPOSITIVO_TB_CENA_RELACIONADA")
+  dt_criacao                                             DateTime @db.Timestamp(6)
+  dt_modificacao                                         DateTime @db.Timestamp(6)
+  TB_CENA_TB_CENA_SEQUENCIA_id_cenaToTB_CENA             TB_CENA  @relation("TB_CENA_SEQUENCIA_id_cenaToTB_CENA", fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  TB_CENA_TB_CENA_SEQUENCIA_id_cena_relacionadaToTB_CENA TB_CENA  @relation("TB_CENA_SEQUENCIA_id_cena_relacionadaToTB_CENA", fields: [id_cena_relacionada], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([id_cena, id_cena_relacionada, id_ordem])
-  @@index([id_cena_relacionada], map: "TB_DISPOSITIVO_TB_CENA_RELACIONADA")
+  @@index([id_cena_relacionada])
 }
 
 model TB_CENA_STATUS_HISTORICO {
   id                     Int   @id @default(autoincrement())
   id_cena                Int
-  id_st_cena             Int      @db.TinyInt
-  dt_modificacao         DateTime @db.DateTime(0)
-  dt_criacao             DateTime @default(now()) @db.DateTime(0)
+  id_st_cena             Int      @db.SmallInt
+  dt_modificacao         DateTime @db.Timestamp(6)
+  dt_criacao             DateTime @default(now()) @db.Timestamp(6)
   cd_usuario_criacao     String   @db.VarChar(50)
   cd_usuario_modificacao String   @db.VarChar(50)
-  TB_CENA                TB_CENA  @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_status_cena_historico_cena")
+  TB_CENA                TB_CENA  @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([id_cena], map: "fk_status_cena_historico_cena_idx")
+  @@index([id_cena])
 }
 
 model TB_CENA_TAG {
@@ -296,13 +295,13 @@ model TB_CENA_TAG {
   id_tag                 Int
   cd_usuario_criacao     String   @db.VarChar(50)
   cd_usuario_modificacao String   @db.VarChar(50)
-  dt_criacao             DateTime @db.DateTime(0)
-  dt_modificacao         DateTime @db.DateTime(0)
-  TB_CENA                TB_CENA  @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CENA_TAGS_TB_CENA")
-  TB_TAG                 TB_TAG   @relation(fields: [id_tag], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CENA_TAGS_TB_TAG")
+  dt_criacao             DateTime @db.Timestamp(6)
+  dt_modificacao         DateTime @db.Timestamp(6)
+  TB_CENA                TB_CENA  @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  TB_TAG                 TB_TAG   @relation(fields: [id_tag], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([id_cena, id_tag])
-  @@index([id_tag], map: "TB_CENA_TAGS_TB_TAG")
+  @@index([id_tag])
 }
 
 model TB_CENA_TEXTO {
@@ -310,25 +309,25 @@ model TB_CENA_TEXTO {
   id_cena                  Int
   id_personagem            Int?
   id_numero                Int
-  id_tp_texto              Int              @db.TinyInt
-  id_tp_dialogo            Int?             @db.TinyInt
+  id_tp_texto              Int              @db.SmallInt
+  id_tp_dialogo            Int?             @db.SmallInt
   nm_temporario_personagem String?          @db.VarChar(50)
   ds_texto                 String           @db.VarChar(10000)
-  st_ativo                 Boolean          @default(dbgenerated("b'1'")) @db.Bit(1)
+  st_ativo                 String           @default("1") @db.VarBit(1)
   cd_usuario_criacao       String           @db.VarChar(50)
   cd_usuario_modificacao   String           @db.VarChar(50)
-  dt_criacao               DateTime         @db.DateTime(0)
-  dt_modificacao           DateTime         @db.DateTime(0)
-  TB_CENA                  TB_CENA          @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CENA_TEXTO_CENA")
-  TB_PERSONAGEM            TB_PERSONAGEM?   @relation(fields: [id_personagem], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CENA_TEXTO_PERSONAGEM")
-  TB_TIPO_DIALOGO          TB_TIPO_DIALOGO? @relation(fields: [id_tp_dialogo], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CENA_TEXTO_TIPO_DIALOGO")
-  TB_TIPO_TEXTO            TB_TIPO_TEXTO    @relation(fields: [id_tp_texto], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CENA_TEXTO_TIPO_TEXTO")
+  dt_criacao               DateTime         @db.Timestamp(6)
+  dt_modificacao           DateTime         @db.Timestamp(6)
+  TB_CENA                  TB_CENA          @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  TB_PERSONAGEM            TB_PERSONAGEM?   @relation(fields: [id_personagem], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  TB_TIPO_DIALOGO          TB_TIPO_DIALOGO? @relation(fields: [id_tp_dialogo], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  TB_TIPO_TEXTO            TB_TIPO_TEXTO    @relation(fields: [id_tp_texto], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([st_ativo], map: "ATIVO_IX")
-  @@index([id_cena], map: "TB_CENA_TEXTO_CENA")
-  @@index([id_personagem], map: "TB_CENA_TEXTO_PERSONAGEM_idx")
-  @@index([id_tp_dialogo], map: "TB_CENA_TEXTO_TIPO_DIALOGO")
-  @@index([id_tp_texto], map: "TB_CENA_TEXTO_TIPO_TEXTO")
+  @@index([id_cena])
+  @@index([id_personagem])
+  @@index([id_tp_dialogo])
+  @@index([id_tp_texto])
+  @@index([st_ativo])
 }
 
 model TB_CLAQUETE {
@@ -336,12 +335,12 @@ model TB_CLAQUETE {
   ds_claquete            String?            @db.VarChar(100)
   nm_diretor_frente      String             @db.VarChar(50)
   nm_diretor_fotografia  String?            @db.VarChar(50)
-  st_invertida           Boolean?           @default(dbgenerated("b'0'")) @db.Bit(1)
+  st_invertida           String?            @default("0") @db.VarBit(1)
   qt_frames              Int?               @default(60)
   cd_usuario_criacao     String             @db.VarChar(50)
   cd_usuario_modificacao String             @db.VarChar(50)
-  dt_criacao             DateTime           @db.DateTime(0)
-  dt_modificacao         DateTime           @db.DateTime(0)
+  dt_criacao             DateTime           @db.Timestamp(6)
+  dt_modificacao         DateTime           @db.Timestamp(6)
   TB_CLAQUETE_CENA       TB_CLAQUETE_CENA[]
 }
 
@@ -350,19 +349,19 @@ model TB_CLAQUETE_CENA {
   id_cena                Int
   cd_usuario_criacao     String      @db.VarChar(50)
   cd_usuario_modificacao String      @db.VarChar(50)
-  dt_criacao             DateTime    @db.DateTime(0)
-  dt_modificacao         DateTime    @db.DateTime(0)
-  TB_CLAQUETE            TB_CLAQUETE @relation(fields: [id_claquete], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_CLAQUETE_CENA_CLQUETE")
+  dt_criacao             DateTime    @db.Timestamp(6)
+  dt_modificacao         DateTime    @db.Timestamp(6)
+  TB_CLAQUETE            TB_CLAQUETE @relation(fields: [id_claquete], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([id_claquete, id_cena])
-  @@index([id_cena], map: "CLAQUETE_CENA_FK_idx")
+  @@index([id_cena])
 }
 
 model TB_CONEXAO {
   id                String              @id @db.VarChar(50)
-  tp_notificacao    Int                 @db.TinyInt
-  dt_criacao        DateTime            @default(now()) @db.DateTime(0)
-  dt_modificacao    DateTime            @default(now()) @db.DateTime(0)
+  tp_notificacao    Int                 @db.SmallInt
+  dt_criacao        DateTime            @default(now()) @db.Timestamp(6)
+  dt_modificacao    DateTime            @default(now()) @db.Timestamp(6)
   TB_CONEXAO_FILTRO TB_CONEXAO_FILTRO[]
 }
 
@@ -371,18 +370,18 @@ model TB_CONEXAO_FILTRO {
   id_conexao     String     @db.VarChar(50)
   nm_filtro      String     @db.VarChar(50)
   filtro         String     @db.VarChar(50)
-  dt_criacao     DateTime   @default(now()) @db.DateTime(0)
-  dt_modificacao DateTime   @default(now()) @db.DateTime(0)
-  TB_CONEXAO     TB_CONEXAO @relation(fields: [id_conexao], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "CONEXAO_FILTRO_CONEXAO")
+  dt_criacao     DateTime   @default(now()) @db.Timestamp(6)
+  dt_modificacao DateTime   @default(now()) @db.Timestamp(6)
+  TB_CONEXAO     TB_CONEXAO @relation(fields: [id_conexao], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@unique([id_conexao, nm_filtro, filtro], map: "id_conexao")
+  @@unique([id_conexao, nm_filtro, filtro], map: "TB_CONEXAO_FILTRO_id_conexao_nm_filtro_filtro_idx")
 }
 
 model TB_CONTROLE_CONVIVENCIA {
   id            Int   @id @default(autoincrement())
   id_execucao   String?  @db.VarChar(50)
-  dt_execucao   DateTime @db.DateTime(0)
-  objeto_resumo Json
+  dt_execucao   DateTime @db.Timestamp(6)
+  objeto_resumo Json     @db.Json
 }
 
 model TB_DISPOSITIVO {
@@ -390,110 +389,110 @@ model TB_DISPOSITIVO {
   nm_alias       String   @db.VarChar(50)
   cd_endereco    String?  @db.VarChar(50)
   nm_acesso      String?  @db.VarChar(50)
-  dt_criacao     DateTime @db.DateTime(0)
-  dt_modificacao DateTime @db.DateTime(0)
+  dt_criacao     DateTime @db.Timestamp(6)
+  dt_modificacao DateTime @db.Timestamp(6)
 }
 
 model TB_DUBLE {
   id                     Int                @id @default(autoincrement())
   id_programa            Int
   nm_duble               String                @db.VarChar(50)
-  st_acao                Boolean               @db.Bit(1)
-  st_corpo               Boolean               @db.Bit(1)
-  st_ativo               Boolean               @default(dbgenerated("b'1'")) @db.Bit(1)
-  dt_criacao             DateTime              @db.DateTime(0)
-  dt_modificacao         DateTime              @db.DateTime(0)
+  st_acao                String                @db.VarBit(1)
+  st_corpo               String                @db.VarBit(1)
+  st_ativo               String                @default("1") @db.VarBit(1)
+  dt_criacao             DateTime              @db.Timestamp(6)
+  dt_modificacao         DateTime              @db.Timestamp(6)
   cd_usuario_criacao     String                @db.VarChar(50)
   cd_usuario_modificacao String                @db.VarChar(50)
   TB_DUBLE_PERSONAGEM    TB_DUBLE_PERSONAGEM[]
 
-  @@index([st_ativo], map: "ATIVO_IX")
-  @@index([nm_duble], map: "NOME_IX")
-  @@index([id_programa], map: "PROGRAMA_IX")
+  @@index([id_programa])
+  @@index([nm_duble])
+  @@index([st_ativo])
 }
 
 model TB_DUBLE_PERSONAGEM {
   id                       Int                     @id @default(autoincrement())
   id_duble                 Int
   id_personagem            Int?
-  dt_criacao               DateTime                   @db.DateTime(0)
-  dt_modificacao           DateTime                   @db.DateTime(0)
+  dt_criacao               DateTime                   @db.Timestamp(6)
+  dt_modificacao           DateTime                   @db.Timestamp(6)
   cd_usuario_criacao       String                     @db.VarChar(50)
   cd_usuario_modificacao   String                     @db.VarChar(50)
-  TB_DUBLE                 TB_DUBLE                   @relation(fields: [id_duble], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_DUBLE")
-  TB_PERSONAGEM            TB_PERSONAGEM?             @relation(fields: [id_personagem], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PERSONAGEM")
+  TB_DUBLE                 TB_DUBLE                   @relation(fields: [id_duble], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  TB_PERSONAGEM            TB_PERSONAGEM?             @relation(fields: [id_personagem], references: [id], onDelete: NoAction, onUpdate: NoAction)
   TB_DUBLE_PERSONAGEM_CENA TB_DUBLE_PERSONAGEM_CENA[]
 
-  @@index([id_duble], map: "FK_DUBLE_idx")
-  @@index([id_personagem], map: "FK_PERSONAGEM_idx")
+  @@index([id_duble])
+  @@index([id_personagem])
 }
 
 model TB_DUBLE_PERSONAGEM_CENA {
   id                     Int              @id @default(autoincrement())
   id_cena                Int
   id_duble_personagem    Int
-  dt_criacao             DateTime            @db.DateTime(0)
-  dt_modificacao         DateTime            @db.DateTime(0)
+  dt_criacao             DateTime            @db.Timestamp(6)
+  dt_modificacao         DateTime            @db.Timestamp(6)
   cd_usuario_criacao     String              @db.VarChar(50)
   cd_usuario_modificacao String              @db.VarChar(50)
-  TB_CENA                TB_CENA             @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_CENA")
-  TB_DUBLE_PERSONAGEM    TB_DUBLE_PERSONAGEM @relation(fields: [id_duble_personagem], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_DUBLE_PERSONAGEM")
+  TB_CENA                TB_CENA             @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  TB_DUBLE_PERSONAGEM    TB_DUBLE_PERSONAGEM @relation(fields: [id_duble_personagem], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([id_cena], map: "FK_CENA_idx")
-  @@index([id_duble_personagem], map: "FK_DUBLE_PERSONAGEM_idx")
+  @@index([id_cena])
+  @@index([id_duble_personagem])
 }
 
 model TB_FIGURANTE {
   id                     Int              @id @default(autoincrement())
   id_programa            Int
   nm_figurante           String              @db.VarChar(50)
-  st_menor_idade         Boolean             @db.Bit(1)
-  st_grupo               Boolean             @db.Bit(1)
-  st_recorrente          Boolean             @db.Bit(1)
-  st_ativo               Boolean             @default(dbgenerated("b'1'")) @db.Bit(1)
-  dt_criacao             DateTime            @db.DateTime(0)
-  dt_modificacao         DateTime            @db.DateTime(0)
+  st_menor_idade         String              @db.VarBit(1)
+  st_grupo               String              @db.VarBit(1)
+  st_recorrente          String              @db.VarBit(1)
+  st_ativo               String              @default("1") @db.VarBit(1)
+  dt_criacao             DateTime            @db.Timestamp(6)
+  dt_modificacao         DateTime            @db.Timestamp(6)
   cd_usuario_criacao     String              @db.VarChar(50)
   cd_usuario_modificacao String              @db.VarChar(50)
   TB_CENA_FIGURANTE      TB_CENA_FIGURANTE[]
 
-  @@index([st_ativo], map: "ATIVO_IX")
-  @@index([nm_figurante], map: "NOME_IX")
-  @@index([id_programa], map: "PROGRAMA_IX")
+  @@index([id_programa])
+  @@index([nm_figurante])
+  @@index([st_ativo])
 }
 
 model TB_FREQUENCIA_ATOR {
   id                     Int             @id @default(autoincrement())
   id_ator                Int
   id_programa            Int
-  id_tp_frequencia       Int                @db.TinyInt
+  id_tp_frequencia       Int                @db.SmallInt
   id_roteiro             Int
-  st_ativo               Boolean            @db.Bit(1)
-  dt_frequencia          DateTime?          @db.DateTime(0)
-  dt_criacao             DateTime           @db.DateTime(0)
-  dt_modificacao         DateTime           @db.DateTime(0)
+  st_ativo               String             @db.VarBit(1)
+  dt_frequencia          DateTime?          @db.Timestamp(6)
+  dt_criacao             DateTime           @db.Timestamp(6)
+  dt_modificacao         DateTime           @db.Timestamp(6)
   cd_usuario_criacao     String             @db.VarChar(50)
   cd_usuario_modificacao String             @db.VarChar(50)
-  TB_TIPO_FREQUENCIA     TB_TIPO_FREQUENCIA @relation(fields: [id_tp_frequencia], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_FREQUENCIA_ATOR_TIPO_FREQUENCIA")
+  TB_TIPO_FREQUENCIA     TB_TIPO_FREQUENCIA @relation(fields: [id_tp_frequencia], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([id_ator, st_ativo, id_programa], map: "ATOR_ATIVO_PROGRAMA_IX")
-  @@index([id_tp_frequencia], map: "TB_FREQUENCIA_ATOR_TIPO_FREQUENCIA")
+  @@index([id_ator, st_ativo, id_programa])
+  @@index([id_tp_frequencia])
 }
 
 model TB_INDISPONIBILIDADE_ATOR {
   Id          Int       @id @default(autoincrement())
   IdAtor      Int
-  DataInicio  DateTime  @db.DateTime(0)
-  DataFim     DateTime  @db.DateTime(0)
-  HoraInicio  DateTime? @db.Time(0)
-  HoraFim     DateTime? @db.Time(0)
+  DataInicio  DateTime  @db.Timestamp(6)
+  DataFim     DateTime  @db.Timestamp(6)
+  HoraInicio  DateTime? @db.Time(6)
+  HoraFim     DateTime? @db.Time(6)
   Comentario  String?   @db.VarChar(200)
-  StatusAtivo Boolean?  @db.Bit(1)
+  StatusAtivo String?   @db.VarBit(1)
   DiaSemana   String?   @db.VarChar(20)
   IdPrograma  Int
-  TB_ATOR     TB_ATOR   @relation(fields: [IdAtor], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_INDISPONIBILIDADE_ATOR_ibfk_1")
+  TB_ATOR     TB_ATOR   @relation(fields: [IdAtor], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([IdAtor], map: "IdAtor")
+  @@index([IdAtor])
 }
 
 model TB_LOG_AUDITORIA {
@@ -503,39 +502,39 @@ model TB_LOG_AUDITORIA {
   id_entidade          Int?
   id_entidade_composta String?  @db.VarChar(100)
   operacao             String   @db.VarChar(3)
-  data                 DateTime @db.DateTime(0)
+  data                 DateTime @db.Timestamp(6)
   usuario              String?  @db.VarChar(100)
-  objeto_json          Json
+  objeto_json          Json     @db.Json
 }
 
 model TB_OCORRENCIA {
   id                      Int                  @id @default(autoincrement())
   id_programa             Int
   id_roteiro              Int
-  dt_ocorrencia           DateTime                @db.DateTime(0)
+  dt_ocorrencia           DateTime                @db.Timestamp(6)
   id_categoria            Int
-  id_tipo_impedimento     Int                     @db.TinyInt
+  id_tipo_impedimento     Int                     @db.SmallInt
   ds_ocorrencia           String                  @db.VarChar(1000)
-  st_ativo                Boolean                 @default(dbgenerated("b'1'")) @db.Bit(1)
+  st_ativo                String                  @default("1") @db.VarBit(1)
   cd_usuario_criacao      String                  @db.VarChar(50)
   cd_usuario_modificacao  String                  @db.VarChar(50)
-  dt_criacao              DateTime                @db.DateTime(0)
-  dt_modificacao          DateTime                @db.DateTime(0)
-  TB_CATEGORIA_OCORRENCIA TB_CATEGORIA_OCORRENCIA @relation(fields: [id_categoria], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "OCORRENCIA_CATEGORIA")
-  TB_TIPO_IMPEDIMENTO     TB_TIPO_IMPEDIMENTO     @relation(fields: [id_tipo_impedimento], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "OCORRENCIA_TIPO_IMPEDIMENTO")
+  dt_criacao              DateTime                @db.Timestamp(6)
+  dt_modificacao          DateTime                @db.Timestamp(6)
+  TB_CATEGORIA_OCORRENCIA TB_CATEGORIA_OCORRENCIA @relation(fields: [id_categoria], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  TB_TIPO_IMPEDIMENTO     TB_TIPO_IMPEDIMENTO     @relation(fields: [id_tipo_impedimento], references: [id], onDelete: NoAction, onUpdate: NoAction)
   TB_OCORRENCIA_ANEXO     TB_OCORRENCIA_ANEXO[]
   TB_OCORRENCIA_ATOR      TB_OCORRENCIA_ATOR[]
   TB_OCORRENCIA_CENA      TB_OCORRENCIA_CENA[]
 
-  @@index([id_categoria], map: "OCORRENCIA_CATEGORIA")
-  @@index([id_tipo_impedimento], map: "OCORRENCIA_TIPO_IMPEDIMENTO")
-  @@index([id_programa, st_ativo], map: "PROGRAMA_ATIVO_IX")
+  @@index([id_categoria])
+  @@index([id_programa, st_ativo])
+  @@index([id_tipo_impedimento])
 }
 
 model TB_OCORRENCIA_ANEXO {
   id_ocorrencia Int
   nm_anexo      String        @db.VarChar(50)
-  TB_OCORRENCIA TB_OCORRENCIA @relation(fields: [id_ocorrencia], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "OCORRENCIA_ANEXO_OCORRENCIA")
+  TB_OCORRENCIA TB_OCORRENCIA @relation(fields: [id_ocorrencia], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([id_ocorrencia, nm_anexo])
 }
@@ -543,7 +542,7 @@ model TB_OCORRENCIA_ANEXO {
 model TB_OCORRENCIA_ATOR {
   id_ocorrencia Int
   id_ator       Int
-  TB_OCORRENCIA TB_OCORRENCIA @relation(fields: [id_ocorrencia], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "OCORRENCIA_ATOR_OCORRENCIA")
+  TB_OCORRENCIA TB_OCORRENCIA @relation(fields: [id_ocorrencia], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([id_ocorrencia, id_ator])
 }
@@ -551,7 +550,7 @@ model TB_OCORRENCIA_ATOR {
 model TB_OCORRENCIA_CENA {
   id_ocorrencia Int
   id_cena       Int
-  TB_OCORRENCIA TB_OCORRENCIA @relation(fields: [id_ocorrencia], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "OCORRENCIA_CENA_OCORRENCIA")
+  TB_OCORRENCIA TB_OCORRENCIA @relation(fields: [id_ocorrencia], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([id_ocorrencia, id_cena])
 }
@@ -561,40 +560,39 @@ model TB_PAINEL {
   cd_mac_address         String?               @db.VarChar(11)
   id_roteiro             Int?
   id_programa            Int?
-  id_st_painel           Int                   @db.TinyInt
+  id_st_painel           Int                   @db.SmallInt
   nm_grupo               String?               @db.VarChar(50)
   cd_token_identificacao String?               @db.VarChar(2000)
   cd_token_atualizacao   String?               @db.VarChar(2000)
   cd_token_usuario       String?               @db.VarChar(2000)
-  dt_criacao             DateTime              @db.DateTime(0)
-  dt_modificacao         DateTime              @db.DateTime(0)
+  dt_criacao             DateTime              @db.Timestamp(6)
+  dt_modificacao         DateTime              @db.Timestamp(6)
   cd_dispositivo         String?               @db.VarChar(11)
-  TB_STATUS_DISPOSITIVO  TB_STATUS_DISPOSITIVO @relation(fields: [id_st_painel], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_DISPOSITIVO_STATUS_DISPOSITIVO")
+  TB_STATUS_DISPOSITIVO  TB_STATUS_DISPOSITIVO @relation(fields: [id_st_painel], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([id_st_painel], map: "TB_DISPOSITIVO_STATUS_DISPOSITIVO_idx")
-  @@index([cd_painel], map: "TB_PAINEL_DISPOSITIVO_idx")
-  @@index([cd_mac_address], map: "TB_PAINEL_DISPOSITIVO_idx1")
+  @@index([cd_mac_address])
+  @@index([cd_painel])
+  @@index([id_st_painel])
 }
 
 model TB_PERSONAGEM {
   id                     Int                   @id @default(autoincrement())
   id_programa            Int
   id_tp_personagem       Int?                     @db.SmallInt
-  st_ativo               Boolean                  @default(dbgenerated("b'1'")) @db.Bit(1)
+  st_ativo               String                   @default("1") @db.VarBit(1)
   cd_usuario_criacao     String                   @db.VarChar(50)
   cd_usuario_modificacao String                   @db.VarChar(50)
-  dt_criacao             DateTime                 @db.DateTime(0)
-  dt_modificacao         DateTime                 @db.DateTime(0)
+  dt_criacao             DateTime                 @db.Timestamp(6)
+  dt_modificacao         DateTime                 @db.Timestamp(6)
   nm_personagem          String                   @db.VarChar(50)
   id_ator                Int?
-  TB_CENA_PERSONAGEM     TB_CENA_PERSONAGEM[]
   TB_CENA_TEXTO          TB_CENA_TEXTO[]
   TB_DUBLE_PERSONAGEM    TB_DUBLE_PERSONAGEM[]
-  TB_ATOR                TB_ATOR?                 @relation(fields: [id_ator], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_PERSONAGEM_FK")
+  TB_ATOR                TB_ATOR?                 @relation(fields: [id_ator], references: [id], onDelete: NoAction, onUpdate: NoAction)
   TB_PERSONAGEM_SINONIMO TB_PERSONAGEM_SINONIMO[]
 
-  @@index([id_programa], map: "PROGRAMA_IX")
-  @@index([id_ator], map: "TB_PERSONAGEM_FK")
+  @@index([id_ator])
+  @@index([id_programa])
 }
 
 model TB_PERSONAGEM_SINONIMO {
@@ -603,29 +601,29 @@ model TB_PERSONAGEM_SINONIMO {
   nm_personagem_temporario String        @db.VarChar(100)
   cd_usuario_criacao       String        @db.VarChar(50)
   cd_usuario_modificacao   String        @db.VarChar(50)
-  dt_criacao               DateTime      @db.DateTime(0)
-  dt_modificacao           DateTime      @db.DateTime(0)
-  TB_PERSONAGEM            TB_PERSONAGEM @relation(fields: [id_personagem], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_sinonimo_personagem_personagem")
+  dt_criacao               DateTime      @db.Timestamp(6)
+  dt_modificacao           DateTime      @db.Timestamp(6)
+  TB_PERSONAGEM            TB_PERSONAGEM @relation(fields: [id_personagem], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([id_personagem], map: "fk_sinonimo_personagem_personagem_idx")
-  @@index([nm_personagem_temporario], map: "ix_nm_personagem")
+  @@index([id_personagem])
+  @@index([nm_personagem_temporario])
 }
 
 model TB_ROTEIRO {
   id                        Int                     @id @default(autoincrement())
   id_programa               Int
-  id_tp_roteiro             Int                        @db.TinyInt
+  id_tp_roteiro             Int                        @db.SmallInt
   data_gravacao             DateTime                   @db.Date
-  inicio_gravacao           DateTime?                  @db.Time(0)
-  fim_gravacao              DateTime?                  @db.Time(0)
-  inicio_almoco             DateTime?                  @db.Time(0)
-  saida_gravacao            DateTime?                  @db.Time(0)
+  inicio_gravacao           DateTime?                  @db.Time(6)
+  fim_gravacao              DateTime?                  @db.Time(6)
+  inicio_almoco             DateTime?                  @db.Time(6)
+  saida_gravacao            DateTime?                  @db.Time(6)
   nm_diretor_frente         String?                    @db.VarChar(256)
-  st_ativo                  Boolean                    @default(dbgenerated("b'1'")) @db.Bit(1)
+  st_ativo                  String                     @default("1") @db.VarBit(1)
   cd_usuario_criacao        String                     @db.VarChar(50)
   cd_usuario_modificacao    String                     @db.VarChar(50)
-  dt_criacao                DateTime                   @db.DateTime(0)
-  dt_modificacao            DateTime                   @db.DateTime(0)
+  dt_criacao                DateTime                   @db.Timestamp(6)
+  dt_modificacao            DateTime                   @db.Timestamp(6)
   id_numero                 Int
   ds_observacao             String?                    @db.VarChar(500)
   ds_recado_gerente         String?                    @db.VarChar(1000)
@@ -634,24 +632,24 @@ model TB_ROTEIRO {
   TB_ROTEIRO_PERSONAGEM     TB_ROTEIRO_PERSONAGEM[]
   TB_ROTEIRO_STATUS         TB_ROTEIRO_STATUS[]
 
-  @@unique([id_programa, id_numero], map: "TB_ROTEIRO_UN")
-  @@index([id_programa, data_gravacao], map: "tb_roteiro_id_programa_IDX")
+  @@unique([id_programa, id_numero], map: "TB_ROTEIRO_id_programa_id_numero_idx")
+  @@index([id_programa, data_gravacao])
 }
 
 model TB_ROTEIRO_CENA {
   id_roteiro             Int
   id_cena                Int
   id_numero_ordem        Int
-  st_cena_roteiro        Int        @db.TinyInt
+  st_cena_roteiro        Int        @db.SmallInt
   cd_usuario_criacao     String     @db.VarChar(50)
   cd_usuario_modificacao String     @db.VarChar(50)
-  dt_criacao             DateTime   @db.DateTime(0)
-  dt_modificacao         DateTime   @db.DateTime(0)
-  TB_CENA                TB_CENA    @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tb_roteiro_cena_cena_FK")
-  TB_ROTEIRO             TB_ROTEIRO @relation(fields: [id_roteiro], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tb_roteiro_cena_roteiro_FK")
+  dt_criacao             DateTime   @db.Timestamp(6)
+  dt_modificacao         DateTime   @db.Timestamp(6)
+  TB_CENA                TB_CENA    @relation(fields: [id_cena], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  TB_ROTEIRO             TB_ROTEIRO @relation(fields: [id_roteiro], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@id([id_roteiro, id_cena])
-  @@index([id_cena], map: "tb_roteiro_cena_cena_FK")
+  @@index([id_cena])
 }
 
 model TB_ROTEIRO_CENA_TEMPORARIA {
@@ -659,11 +657,11 @@ model TB_ROTEIRO_CENA_TEMPORARIA {
   id_roteiro             Int
   id_cena                Int
   id_numero_ordem        Int
-  st_cena_roteiro        Int      @db.TinyInt
+  st_cena_roteiro        Int      @db.SmallInt
   cd_usuario_criacao     String   @db.VarChar(50)
   cd_usuario_modificacao String   @db.VarChar(50)
-  dt_criacao             DateTime @db.DateTime(0)
-  dt_modificacao         DateTime @db.DateTime(0)
+  dt_criacao             DateTime @db.Timestamp(6)
+  dt_modificacao         DateTime @db.Timestamp(6)
 }
 
 model TB_ROTEIRO_LOCAL_GRAVACAO {
@@ -672,9 +670,9 @@ model TB_ROTEIRO_LOCAL_GRAVACAO {
   endereco               String?    @db.VarChar(280)
   cd_usuario_criacao     String     @db.VarChar(50)
   cd_usuario_modificacao String     @db.VarChar(50)
-  dt_criacao             DateTime   @db.DateTime(0)
-  dt_modificacao         DateTime   @db.DateTime(0)
-  TB_ROTEIRO             TB_ROTEIRO @relation(fields: [id_roteiro], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "id_roteiro_local_roteiro_fk")
+  dt_criacao             DateTime   @db.Timestamp(6)
+  dt_modificacao         DateTime   @db.Timestamp(6)
+  TB_ROTEIRO             TB_ROTEIRO @relation(fields: [id_roteiro], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model TB_ROTEIRO_PERSONAGEM {
@@ -682,103 +680,103 @@ model TB_ROTEIRO_PERSONAGEM {
   id_roteiro               Int
   id_personagem            Int?
   nm_temporario_personagem String?    @db.VarChar(50)
-  hora_chegada             DateTime?  @db.Time(0)
+  hora_chegada             DateTime?  @db.Time(6)
   ds_comentario            String?    @db.VarChar(300)
   cd_usuario_criacao       String     @db.VarChar(50)
   cd_usuario_modificacao   String     @db.VarChar(50)
-  dt_criacao               DateTime   @db.DateTime(0)
-  dt_modificacao           DateTime   @db.DateTime(0)
-  TB_ROTEIRO               TB_ROTEIRO @relation(fields: [id_roteiro], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tb_roteiro_personagem_roteiro_FK")
+  dt_criacao               DateTime   @db.Timestamp(6)
+  dt_modificacao           DateTime   @db.Timestamp(6)
+  TB_ROTEIRO               TB_ROTEIRO @relation(fields: [id_roteiro], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@unique([id_roteiro, nm_temporario_personagem, id_personagem], map: "UNIQUE_PERSONAGEM_ROTEIRO_NOME")
-  @@index([id_personagem], map: "tb_roteiro_personagem_personagem_FK")
+  @@unique([id_roteiro, nm_temporario_personagem, id_personagem], map: "TB_ROTEIRO_PERSONAGEM_id_r36532-59e7-4fad-8c55-aaeb4781c6b5_idx")
+  @@index([id_personagem])
 }
 
 model TB_ROTEIRO_STATUS {
   id                     Int     @id @default(autoincrement())
   id_roteiro             Int
-  st_roteiro             Int        @db.TinyInt
+  st_roteiro             Int        @db.SmallInt
   ds_comentario          String?    @db.VarChar(256)
   cd_usuario_criacao     String     @db.VarChar(50)
   cd_usuario_modificacao String     @db.VarChar(50)
-  dt_criacao             DateTime   @db.DateTime(0)
-  dt_modificacao         DateTime   @db.DateTime(0)
-  TB_ROTEIRO             TB_ROTEIRO @relation(fields: [id_roteiro], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "TB_ROTEIRO_STATUS_FK")
+  dt_criacao             DateTime   @db.Timestamp(6)
+  dt_modificacao         DateTime   @db.Timestamp(6)
+  TB_ROTEIRO             TB_ROTEIRO @relation(fields: [id_roteiro], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([id_roteiro], map: "id_roteiro_IDX")
+  @@index([id_roteiro])
 }
 
 model TB_STATUS_CAPITULO {
-  id          Int           @id @db.TinyInt
+  id          Int           @id @db.SmallInt
   nm_status   String        @db.VarChar(50)
   TB_CAPITULO TB_CAPITULO[]
 }
 
 model TB_STATUS_DISPOSITIVO {
-  id        Int         @id @db.TinyInt
+  id        Int         @id @db.SmallInt
   nm_status String      @db.VarChar(50)
   TB_PAINEL TB_PAINEL[]
 }
 
 model TB_TAG {
   id                     Int        @id @default(autoincrement())
-  nm_tag                 String        @unique(map: "NM_TAG_UNIQUE") @db.VarChar(50)
+  nm_tag                 String        @unique(map: "TB_TAG_nm_tag_idx") @db.VarChar(50)
   cd_usuario_criacao     String        @db.VarChar(50)
   cd_usuario_modificacao String        @db.VarChar(50)
-  dt_criacao             DateTime      @db.DateTime(0)
-  dt_modificacao         DateTime      @db.DateTime(0)
+  dt_criacao             DateTime      @db.Timestamp(6)
+  dt_modificacao         DateTime      @db.Timestamp(6)
   TB_CENA_TAG            TB_CENA_TAG[]
 }
 
 model TB_TIPO_AMBIENTE {
-  id      Int    @id @db.TinyInt
+  id      Int    @id @db.SmallInt
   nm_tipo String @db.VarChar(50)
 }
 
 model TB_TIPO_CENA {
-  id      Int       @id @db.TinyInt
+  id      Int       @id @db.SmallInt
   nm_tipo String    @db.VarChar(50)
   TB_CENA TB_CENA[]
 }
 
 model TB_TIPO_DIALOGO {
-  id            Int             @id @db.TinyInt
+  id            Int             @id @db.SmallInt
   nm_tipo       String          @db.VarChar(50)
   TB_CENA_TEXTO TB_CENA_TEXTO[]
 }
 
 model TB_TIPO_ESPACO_CENA {
-  id      Int       @id @unique(map: "ID_UNIQUE") @db.TinyInt
+  id      Int       @id @unique(map: "TB_TIPO_ESPACO_CENA_id_idx") @db.SmallInt
   nm_tipo String    @db.VarChar(50)
   TB_CENA TB_CENA[]
 }
 
 model TB_TIPO_EXECUCAO {
-  id               Int                @id @unique(map: "ID_UNIQUE") @db.TinyInt
+  id               Int                @id @unique(map: "TB_TIPO_EXECUCAO_id_idx") @db.SmallInt
   nm_tipo_execucao String             @db.VarChar(50)
   TB_CENA_EXECUCAO TB_CENA_EXECUCAO[]
 }
 
 model TB_TIPO_FREQUENCIA {
-  id                 Int                  @id @db.TinyInt
+  id                 Int                  @id @db.SmallInt
   nm_tipo            String               @db.VarChar(50)
   TB_FREQUENCIA_ATOR TB_FREQUENCIA_ATOR[]
 }
 
 model TB_TIPO_IMPEDIMENTO {
-  id                  Int             @id @unique(map: "ID_UNIQUE") @db.TinyInt
+  id                  Int             @id @unique(map: "TB_TIPO_IMPEDIMENTO_id_idx") @db.SmallInt
   nm_tipo_impedimento String          @db.VarChar(50)
   TB_OCORRENCIA       TB_OCORRENCIA[]
 }
 
 model TB_TIPO_PERIODO_CENICO {
-  id                Int       @id @unique(map: "ID_UNIQUE") @db.TinyInt
+  id                Int       @id @unique(map: "TB_TIPO_PERIODO_CENICO_id_idx") @db.SmallInt
   nm_periodo_cenico String    @db.VarChar(50)
   TB_CENA           TB_CENA[]
 }
 
 model TB_TIPO_TEXTO {
-  id            Int             @id @db.TinyInt
+  id            Int             @id @db.SmallInt
   nm_tipo       String          @db.VarChar(50)
   TB_CENA_TEXTO TB_CENA_TEXTO[]
 }

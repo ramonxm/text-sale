@@ -4,10 +4,15 @@ import Head from "next/head";
 import { type ParsedUrlQuery } from "querystring";
 import SceneText from "~/components/SceneText";
 import { set } from "idb-keyval";
+import { useEffect } from "react";
+import { type Socket, io } from "socket.io-client";
+import { type DefaultEventsMap } from "@socket.io/component-emitter";
 
 type Props = {
   query: ParsedUrlQuery;
 };
+
+let socket: Socket<DefaultEventsMap, DefaultEventsMap>;
 
 const fetcher = async (id: number) => {
   const res = await fetch(`/api/texts/${id}`);
@@ -37,6 +42,31 @@ const Texts: NextPage<Props> = (props) => {
     queryFn: () => fetcher(Number(id)),
   });
 
+  const socketInitializer = async () => {
+    await fetch("/api/socket");
+    socket = io();
+
+    socket.on("connect", () => {
+      console.log("connected");
+    });
+
+    socket.on("update-input", (msg) => {
+      alert(msg);
+    });
+  };
+
+  const handle = () => {
+    socket.emit("clique", "inserção de texto");
+  };
+
+  useEffect(
+    () =>
+      void (async () => {
+        await socketInitializer();
+      })(),
+    []
+  );
+
   if (error) {
     return <div>Error: {(error as { message: string })?.message}</div>;
   }
@@ -46,6 +76,9 @@ const Texts: NextPage<Props> = (props) => {
       <Head>
         <title>Textos</title>
       </Head>
+      <button type="button" onClick={handle}>
+        Clique
+      </button>
       <SceneText elementosTexto={data ?? []} titleScene="" />
     </>
   );
