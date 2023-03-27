@@ -1,13 +1,25 @@
+import { get } from "idb-keyval";
 import Head from "next/head";
+import { useEffect, useState } from "react";
 
-const Fallback = () => (
-  <>
-    <Head>
-      <title>TextSale</title>
-    </Head>
-    <h1>This is offline fallback page</h1>
-    <h2>When offline, any page route will fallback to this page</h2>
-  </>
-);
+const Offline = () => {
+  const [texts, setTexts] = useState([]);
 
-export default Fallback;
+  useEffect(() => {
+    void (async () => {
+      const textsDbs = (await get("texts")) as never[];
+
+      setTexts(textsDbs);
+    })();
+  }, []);
+  return (
+    <>
+      <Head>
+        <title>TextSale</title>
+      </Head>
+      <pre>{JSON.stringify(texts, null, 4)}</pre>
+    </>
+  );
+};
+
+export default Offline;

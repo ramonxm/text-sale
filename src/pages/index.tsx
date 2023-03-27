@@ -1,6 +1,6 @@
-import styles from "./index.module.css";
 import { type NextPage } from "next";
 import Head from "next/head";
+import Link from "next/link";
 import { getCssText } from "~/styled";
 
 const Home: NextPage = () => {
@@ -83,13 +83,12 @@ const Home: NextPage = () => {
           dangerouslySetInnerHTML={{ __html: getCssText() }}
         />
       </Head>
-      <main className={styles.main}>
-        <div className={styles.container}>
-          <div className={styles.card}>
-            <h1 className={styles.showcaseText}>TextSale</h1>
-          </div>
-        </div>
-      </main>
+
+      <div>
+        <Link href={`/texts/${27423}`} title="Textos">
+          clique
+        </Link>
+      </div>
     </>
   );
 };

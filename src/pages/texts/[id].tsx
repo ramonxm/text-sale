@@ -1,12 +1,19 @@
-import { type GetServerSideProps } from "next";
+import { useQuery } from "@tanstack/react-query";
+import { type NextPage } from "next";
+import Head from "next/head";
+import { type ParsedUrlQuery } from "querystring";
 import SceneText from "~/components/SceneText";
-import { prisma } from "~/server/db";
+import { set } from "idb-keyval";
 
 type Props = {
-  texts: {
+  query: ParsedUrlQuery;
+};
+
+const fetcher = async (id: number) => {
+  const res = await fetch(`/api/texts/${id}`);
+  const data = (await res.json()) as {
     character: {
       name: string | null;
-      id: number | null;
     };
     id: number;
     text: string;
@@ -14,32 +21,38 @@ type Props = {
     sceneId: number;
     dialogType: number | null;
   }[];
+
+  if (res.status !== 200) {
+    throw new Error((data as unknown as { message: string }).message);
+  }
+
+  await set("texts", data);
+  return data;
 };
 
-const Texts = (props: Props) => {
-  return <SceneText elementosTexto={props.texts} titleScene="" />;
-};
-
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const textElements = await prisma.tB_CENA_TEXTO.findMany({
-    where: { id_cena: Number(ctx.query.id) },
+const Texts: NextPage<Props> = (props) => {
+  const { id } = props.query;
+  const { data, error } = useQuery({
+    queryKey: ["texts"],
+    queryFn: () => fetcher(Number(id)),
   });
 
-  const mappedToPersistence = textElements.map((text) => ({
-    character: {
-      name: text.nm_temporario_personagem,
-      id: text.id_personagem,
-    },
-    id: text.id,
-    text: text.ds_texto,
-    textType: text.id_tp_texto,
-    sceneId: text.id_cena,
-    dialogType: text.id_tp_dialogo,
-  }));
+  if (error) {
+    return <div>Error: {(error as { message: string })?.message}</div>;
+  }
 
-  return {
-    props: { texts: mappedToPersistence },
-  };
+  return (
+    <>
+      <Head>
+        <title>Textos</title>
+      </Head>
+      <SceneText elementosTexto={data ?? []} titleScene="" />
+    </>
+  );
+};
+
+Texts.getInitialProps = (ctx) => {
+  return { query: ctx.query };
 };
 
 export default Texts;

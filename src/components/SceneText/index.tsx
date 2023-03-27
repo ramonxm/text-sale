@@ -1,4 +1,3 @@
-import { useState } from "react";
 import * as S from "./styles";
 
 export const TYPE_TEXT = {
@@ -10,7 +9,6 @@ export const TYPE_TEXT = {
 type TextElement = {
   character: {
     name: string | null;
-    id: number | null;
   };
   id: number;
   text: string;
@@ -25,14 +23,6 @@ type SceneTextProps = {
 };
 
 const SceneText = ({ titleScene, elementosTexto }: SceneTextProps) => {
-  const [selectedLineText, setSelectedLineText] = useState<
-    number | undefined
-  >();
-
-  const handleClickText = (textId: number) => {
-    setSelectedLineText((prev) => (prev === textId ? undefined : textId));
-  };
-
   const getDescription = (description: string, typeText: number) => {
     if (typeText === TYPE_TEXT.off) return `(OFF) ${description}`;
     return description;
@@ -43,31 +33,20 @@ const SceneText = ({ titleScene, elementosTexto }: SceneTextProps) => {
       <S.Content>
         <h1>{titleScene}</h1>
         {elementosTexto.map((elementoTexto) => {
-          const isSelectedLine = selectedLineText === elementoTexto.id;
           return (
-            <S.ContainerElementText
-              key={elementoTexto.id}
-              onClick={() => handleClickText(elementoTexto.id)}
-              title={isSelectedLine ? "Deselecionar texto" : "Selecionar texto"}
-            >
+            <S.ContainerElementText key={elementoTexto.id}>
               {elementoTexto?.character ? (
                 <div>
+                  <S.WrapperPersonaName>
+                    <p>
+                      {getDescription(
+                        elementoTexto.character?.name ?? "",
+                        elementoTexto.textType
+                      )}
+                    </p>
+                  </S.WrapperPersonaName>
                   <div>
-                    <div>
-                      <S.WrapperPersonaName>
-                        <p>
-                          {getDescription(
-                            elementoTexto.character?.name ?? "",
-                            elementoTexto.textType
-                          )}
-                        </p>
-                      </S.WrapperPersonaName>
-                    </div>
-                    <div>
-                      <div>
-                        <p>{elementoTexto.text}</p>
-                      </div>
-                    </div>
+                    <p>{elementoTexto.text}</p>
                   </div>
                 </div>
               ) : (
