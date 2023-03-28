@@ -1,14 +1,7 @@
-import {
-  type NextApiHandler,
-  type NextApiRequest,
-  type NextApiResponse,
-} from "next";
+import { type NextApiHandler } from "next";
 import { prisma } from "~/server/db";
 
-const handler: NextApiHandler = async (
-  req: NextApiRequest,
-  res: NextApiResponse
-) => {
+const handler: NextApiHandler = async (req, res) => {
   try {
     const textElements = await prisma.tB_CENA_TEXTO.findMany({
       where: { id_cena: Number(req.query.id) },
