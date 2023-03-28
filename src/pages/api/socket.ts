@@ -28,7 +28,7 @@ export default function SocketHandler(
 
   io.on("connection", (socket) => {
     socket.on("send-message", (obj) => {
-      io.emit("receive-message", obj);
+      io.emit("receive-message", obj, socket.id);
     });
   });
 

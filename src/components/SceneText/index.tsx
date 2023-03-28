@@ -1,5 +1,3 @@
-import * as S from "./styles";
-
 export const TYPE_TEXT = {
   dialog: 1,
   rubric: 2,
@@ -29,35 +27,35 @@ const SceneText = ({ titleScene, elementosTexto }: SceneTextProps) => {
   };
 
   return (
-    <div>
-      <S.Content>
-        <h1>{titleScene}</h1>
+    <div className="m-auto flex w-8/12 flex-col rounded-lg border border-gray-200 bg-white p-12 shadow dark:border-gray-700 dark:bg-gray-800">
+      <div>
+        <h1 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+          {titleScene}
+        </h1>
         {elementosTexto.map((elementoTexto) => {
           return (
-            <S.ContainerElementText key={elementoTexto.id}>
+            <div key={elementoTexto.id}>
               {elementoTexto?.character ? (
                 <div>
-                  <S.WrapperPersonaName>
-                    <p>
-                      {getDescription(
-                        elementoTexto.character?.name ?? "",
-                        elementoTexto.textType
-                      )}
-                    </p>
-                  </S.WrapperPersonaName>
-                  <div>
-                    <p>{elementoTexto.text}</p>
-                  </div>
+                  <p className="font-semibold text-gray-900 dark:text-white">
+                    {getDescription(
+                      elementoTexto.character?.name ?? "",
+                      elementoTexto.textType
+                    )}
+                  </p>
+                  <p className="mb-3 text-gray-500 dark:text-gray-400">
+                    {elementoTexto.text}
+                  </p>
                 </div>
               ) : (
-                <p>
+                <p className="mb-5 text-gray-500 dark:text-gray-400">
                   {getDescription(elementoTexto.text, elementoTexto.textType)}
                 </p>
               )}
-            </S.ContainerElementText>
+            </div>
           );
         })}
-      </S.Content>
+      </div>
     </div>
   );
 };
