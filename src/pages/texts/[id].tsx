@@ -4,13 +4,14 @@ import Head from "next/head";
 import { type ParsedUrlQuery } from "querystring";
 import SceneText from "~/components/SceneText";
 import { set } from "idb-keyval";
-import { useEffect } from "react";
-import { type Socket, io } from "socket.io-client";
-import { type DefaultEventsMap } from "@socket.io/component-emitter";
+import { useEffect, useState } from "react";
 
 type Props = {
   query: ParsedUrlQuery;
 };
+
+import io, { type Socket } from "socket.io-client";
+import { type DefaultEventsMap } from "@socket.io/component-emitter";
 
 let socket: Socket<DefaultEventsMap, DefaultEventsMap>;
 
@@ -36,36 +37,34 @@ const fetcher = async (id: number) => {
 };
 
 const Texts: NextPage<Props> = (props) => {
+  const [valeEste, setValeEste] = useState("");
   const { id } = props.query;
   const { data, error } = useQuery({
     queryKey: ["texts"],
     queryFn: () => fetcher(Number(id)),
   });
 
-  const socketInitializer = async () => {
+  useEffect(() => {
+    void socketInitializer();
+
+    return () => {
+      socket?.disconnect();
+    };
+  }, []);
+
+  async function socketInitializer() {
     await fetch("/api/socket");
+
     socket = io();
 
-    socket.on("connect", () => {
-      console.log("connected");
+    socket.on("receive-message", (data: string) => {
+      setValeEste(data);
     });
+  }
 
-    socket.on("update-input", (msg) => {
-      alert(msg);
-    });
+  const handler = () => {
+    socket.emit("send-message", "ocorreu um vale este");
   };
-
-  const handle = () => {
-    socket.emit("clique", "inserção de texto");
-  };
-
-  useEffect(
-    () =>
-      void (async () => {
-        await socketInitializer();
-      })(),
-    []
-  );
 
   if (error) {
     return <div>Error: {(error as { message: string })?.message}</div>;
@@ -76,7 +75,8 @@ const Texts: NextPage<Props> = (props) => {
       <Head>
         <title>Textos</title>
       </Head>
-      <button type="button" onClick={handle}>
+      <h1>{valeEste}</h1>
+      <button type="button" onClick={handler}>
         Clique
       </button>
       <SceneText elementosTexto={data ?? []} titleScene="" />
