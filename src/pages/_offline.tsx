@@ -31,7 +31,7 @@ const Offline = () => {
 
   const router = useRouter();
 
-  if (!isOnline) {
+  if (isOnline) {
     void router.push("/");
   }
 
