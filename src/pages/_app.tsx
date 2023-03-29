@@ -31,7 +31,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   const router = useRouter();
 
   if (!isOnline) {
-    void router.push("/_offline");
+    void router.push("/offline");
   }
 
   return (
