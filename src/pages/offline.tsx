@@ -31,9 +31,11 @@ const Offline = () => {
 
   const router = useRouter();
 
-  if (isOnline && typeof window !== "undefined") {
-    void router.push("/");
-  }
+  useEffect(() => {
+    if (isOnline && typeof window !== "undefined") {
+      void router.push("/");
+    }
+  }, [isOnline, router]);
 
   return (
     <>

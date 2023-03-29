@@ -30,9 +30,11 @@ const MyApp: AppType = ({ Component, pageProps }) => {
 
   const router = useRouter();
 
-  if (!isOnline) {
-    void router.push("/offline");
-  }
+  useEffect(() => {
+    if (!isOnline) {
+      void router.push("/offline");
+    }
+  }, [isOnline, router]);
 
   return (
     <QueryClientProvider client={queryClient}>
