@@ -93,10 +93,14 @@ const Offline = () => {
             visualizando algum texto, ele foi salvo localmente para você!
           </div>
         </div>
-        <SceneText
-          elementosTexto={texts ?? []}
-          titleScene="CENA 5 / APARTAMENTO / SALA 4 / Interior / Manhã"
-        />
+        {texts && texts.length > 0 ? (
+          <SceneText
+            elementosTexto={texts ?? []}
+            titleScene="CENA 5 / APARTAMENTO / SALA 4 / Interior / Manhã"
+          />
+        ) : (
+          <></>
+        )}
       </div>
     </>
   );

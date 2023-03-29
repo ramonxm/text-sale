@@ -5,7 +5,7 @@ import Head from "next/head";
 import { type ParsedUrlQuery } from "querystring";
 import SceneText from "~/components/SceneText";
 import { set } from "idb-keyval";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type Props = {
   query: ParsedUrlQuery;
@@ -56,25 +56,26 @@ const Texts: NextPage<Props> = (props) => {
     refetchOnWindowFocus: false,
   });
 
+  const socketInitializer = useCallback(async () => {
+    await fetch("/api/socket");
+
+    socket = io();
+
+    socket.on("receive-message", async (data: string, id: string) => {
+      if (socket.id !== id) {
+        await refetch();
+        setNotification(data);
+      }
+    });
+  }, [refetch]);
+
   useEffect(() => {
     void socketInitializer();
 
     return () => {
       socket?.disconnect();
     };
-  }, []);
-
-  async function socketInitializer() {
-    await fetch("/api/socket");
-
-    socket = io();
-
-    socket.on("receive-message", (data: string, id: string) => {
-      if (socket.id !== id) {
-        setNotification(data);
-      }
-    });
-  }
+  }, [socketInitializer]);
 
   const handleAddDialogue = async () => {
     try {
@@ -84,7 +85,7 @@ const Texts: NextPage<Props> = (props) => {
         headers: { "content-type": "application/json" },
       });
       await refetch();
-      socket.emit("send-message", "Ocorreu uma atualização no Texto!");
+      socket.emit("send-message", "Seu texto foi atualizado");
     } catch (error) {
       console.log(error);
     }
@@ -189,53 +190,7 @@ const Texts: NextPage<Props> = (props) => {
             <path d="M271.8 180.8C261.3 191.2 260 193 260 196c0 3.1 2.1 5.6 25.2 28.7 23.5 23.6 25.5 25.3 28.8 25.3 3.2 0 4.7-1.2 15.3-11.8 10.6-10.6 11.7-12.1 11.7-15.3 0-3.8-1.9-6.2-5.7-7.3-3.2-1-5.8.7-14 8.7l-7.3 7.1-6-5.9-6-5.9 6.4-6.6c3.5-3.6 6.9-7.5 7.5-8.7 2.4-4.7-1.5-10.6-7-10.6-2.4 0-4.5 1.4-10.5 7.4l-7.4 7.4-6.2-6.2-6.2-6.2 8.2-8.4c6.1-6.3 8.2-9.1 8.2-11.1 0-3.8-4.1-7.6-8.2-7.6-2.8 0-4.8 1.6-15 11.8zM226.6 226.1c-1.9 1.5-2.6 2.9-2.6 5.7 0 3.4 1.5 5.1 24.7 28.4 13.6 13.6 25.9 25.2 27.4 25.7 3.8 1.3 6.9-.6 16.1-9.6 9.1-9.1 11-12.3 9.6-16.5-1.2-3.3-3.5-4.8-7.5-4.8-2.2 0-4.4 1.5-9.3 6.5l-6.4 6.5-22.1-22c-23.7-23.6-24.5-24.1-29.9-19.9zM33.8 269.8c-20 20.2-22.2 23.8-22.3 36.7 0 13.9-1.3 12.3 55.8 69.4 53.8 53.7 52.4 52.5 58.2 48.7 1.9-1.3 2.5-2.5 2.5-5.4 0-3.6-1.8-5.5-47.6-51.2-26.2-26.1-48.9-49.5-50.5-51.9-3.1-4.9-3.9-11.4-1.8-16.7.5-1.6 8.4-10.3 17.5-19.5 14.1-14.2 16.4-17 16.4-19.7 0-3.8-3.9-7.2-8.3-7.2-2.7 0-5.5 2.3-19.9 16.8zM188.9 263.9c-1.7 1.8-2.9 4-2.9 5.5 0 3.3 28.5 67.3 31.3 70.3 4.3 4.8 12.7 1.7 12.7-4.6 0-1.6-1.2-5.5-2.6-8.7l-2.5-5.8 10.4-10.4 10.5-10.5 5.7 2.7c6.9 3.1 10.8 3.3 13.5.6 2.3-2.3 2.7-7.7.8-10.3-1.9-2.4-67.4-31.7-71-31.7-1.9 0-4 1-5.9 2.9zm31 24.1c5.6 2.4 10.1 4.7 10.1 5 0 .3-2.7 3.2-6 6.5l-5.9 5.9-3.7-8c-5.4-11.9-6.4-14.6-5.5-14.2.5.2 5.4 2.3 11 4.8zM154 304.9c-10.9 3.4-20.9 12.6-23.6 21.8-4 13.6 4.3 26.6 17.7 27.9 4.9.5 6.5.1 18.6-5 17.1-7.2 21.5-7.3 22.9-.2 1.6 8.9-9.9 18.6-22.3 18.6-2.2 0-3.8.8-5.2 2.6-2.8 3.6-2.6 7 .5 10.1 2.4 2.4 3.1 2.5 9.4 2.1 18.3-1.3 33-15.5 33-31.9 0-8.5-2.8-14.2-9.2-18.5-8.7-5.9-15.9-5.4-33.3 2.1-11.3 5-14.9 5.5-16.5 2.6-3.3-6.3 3-14.4 13.7-17.4 7-2 9.3-4.1 9.3-8.5 0-6.2-6.5-8.9-15-6.3z" />
           </svg>
         </h1>
-        {notification && (
-          <div
-            id="toast-success"
-            className="mb-4 flex w-full max-w-xs  items-center rounded-lg bg-white p-4 text-gray-500 shadow dark:bg-gray-800 dark:text-gray-400"
-            role="alert"
-          >
-            <div className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-500 dark:bg-green-800 dark:text-green-200">
-              <svg
-                aria-hidden="true"
-                className="h-5 w-5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-              <span className="sr-only">Check icon</span>
-            </div>
-            <div className="ml-3 text-sm font-normal">{notification}</div>
-            <button
-              type="button"
-              onClick={() => setNotification("")}
-              className="-mx-1.5 -my-1.5 ml-auto inline-flex h-8 w-8 rounded-lg bg-white p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-900 focus:ring-2 focus:ring-gray-300 dark:bg-gray-800 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-white"
-              data-dismiss-target="#toast-success"
-              aria-label="Close"
-            >
-              <span className="sr-only">Close</span>
-              <svg
-                aria-hidden="true"
-                className="h-5 w-5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-            </button>
-          </div>
-        )}
+
         <button
           type="button"
           onClick={handleAddDialogue}
